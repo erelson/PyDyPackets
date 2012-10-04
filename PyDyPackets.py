@@ -67,7 +67,8 @@ if __name__ == '__main__':
                         # print "packet:", [0xff,0xff], byte_list[:-2]
                         # print "old:", byte_packet.word
                         byte_packet.word = [0xff,0xff] + byte_list[:-2]
-                        logging.debug(("packet:", byte_packet.word,))
+                        logging.debug(("packet:", byte_packet.word, \
+                            byte_list[-3:-2] == [255 - (sum(byte_list[:-3]) % 256)] ))
                         byte_list = list()
                         
                     if len(byte_list) > 12:
@@ -83,25 +84,7 @@ if __name__ == '__main__':
                         # print int(byte.encode('hex'),16)
                     # except ValueError as e:
                         # print 'error', byte, e
-    
-    def OtherThreadMethod(byte_packet,outputfile="default_out"):
-        myoldbytelist = None
-        with open(outputfile,'w') as fw:
-            try:
-                while True:
-                    if byte_packet.word != myoldbytelist:
-                        myoldbytelist = byte_packet.word
-                        # logging.debug(("bahhaah", myoldbytelist,))
-                        # logging.debug("")
-                        fw.write(" ".join([str(x) for x in myoldbytelist]))
-                        fw.write("\n")
-                        
-                    # if byte_packet != []:
-                        # print "and ", byte_packet
-            except KeyboardInterrupt:
-                print "KeyboardInterrupt caught! Closing {0}...".format(outputfile)
-                
-        return
+
     
     # Opening the serial port
     try:
@@ -114,9 +97,6 @@ if __name__ == '__main__':
         serExist = 0
     
     
-    # campanel = CameraPanel(frame, camera)
-    # campanel.SetSize((820,480))
-    
     myoldbytelist = None
     mybyte_list = BytePacket()
     
@@ -125,17 +105,6 @@ if __name__ == '__main__':
     thread.daemon = True
     thread.start()
     
-    # thread2 = threading.Thread(target=OtherThreadMethod, args=(mybyte_list,))
-    # thread2.daemon = True
-    # thread2.start()
-    
-    # while True:
-        # # if mybyte_list.word != []:
-        # # if mybyte_list.word != myoldbytelist:
-            # # myoldbytelist = mybyte_list.word
-            # # print myoldbytelist
-            # # # print mybyte_list
-        # pass
     outputfile="default_out"
     with open(outputfile,'w') as fw:
         try:
