@@ -13,6 +13,12 @@ from optparse import OptionParser
 def logger_method(translate=False):
     """ """
     
+                
+    # Serial port settings
+    myPort = 16 #=17 #~ note: use port number - 1
+    myBaud = 1000000
+    
+    
     logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',)
                         
@@ -31,11 +37,6 @@ def logger_method(translate=False):
             finally:
                 self.lock.release()
                 
-                
-    # xBee serial port settings
-    myPort = 16 #15 #~ note: use port number - 1
-    # myPort = 16 #15 #~ note: use port number - 1
-    myBaud = 1000000
     
     def COMThread(byte_packet, saveAll=False, translate=False):
         """
