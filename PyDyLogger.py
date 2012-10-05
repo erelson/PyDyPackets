@@ -1,15 +1,17 @@
-import httplib
+#! /usr/bin/env python
 import base64
 import StringIO
 import threading
 import time
-import wx
 import logging  # prevents different threads' output from mixing
 
-import serial
+import PyDyPackets
 
-if __name__ == '__main__':
-    
+import serial
+from optparse import OptionParser
+
+def logger_method(translate=False):
+    """ """
     
     logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',)
@@ -35,7 +37,7 @@ if __name__ == '__main__':
     # myPort = 16 #15 #~ note: use port number - 1
     myBaud = 1000000
     
-    def COMThread(byte_packet, saveAll=False):
+    def COMThread(byte_packet, saveAll=False, translate=False):
         """
         Receives:
         byte_packet - a BytePacket
@@ -72,8 +74,14 @@ if __name__ == '__main__':
                             byte_packet.word = [0xff,0xff] + byte_list[:-2]
                         elif checksumOK:
                             byte_packet.word = [0xff,0xff] + byte_list[:-2]
-                        logging.debug(("packet:", byte_packet.word, "packet ok?:", \
-                            checksumOK ))
+                        
+                        if translate:
+                            # logging.debug("\t".join(PyDyPackets.translate_packet(byte_packet.word)))
+                            print "\t".join(PyDyPackets.translate_packet(byte_packet.word))
+                        else:
+                            logging.debug(("packet:", byte_packet.word, "packet ok?:", \
+                                checksumOK ))
+                                
                         byte_list = list()
                         
                     # arbitrary threshold to keep byte_list at a reasonable size.
@@ -95,18 +103,19 @@ if __name__ == '__main__':
     # Opening the serial port
     try:
         ser = serial.Serial(myPort,myBaud) #port number - 1
-        print "Successfully connected to port {0} at {1} baud".format(myPort,myBaud)
+        print "Successfully connected to port {0} at {1} baud".format(myPort+1,myBaud)
         serExist = 1
     
     except serial.SerialException:
-        print "Couldn't open xBee serial port. Try again later."
+        print "Couldn't open serial port {0}. Try again later.".format(myPort+1)
         serExist = 0
     
     
     myoldbytelist = None
     mybyte_list = BytePacket()
     
-    thread = threading.Thread(target=COMThread, args=(mybyte_list,))
+    thread = threading.Thread(target=COMThread, args=(mybyte_list,),kwargs={'translate': translate})
+    # thread = threading.Thread(target=COMThread, args=(mybyte_list,))
     # thread = threading.Thread(target=COMThread, kwargs={'byte_packet': mybyte_list})
     thread.daemon = True
     thread.start()
@@ -128,3 +137,26 @@ if __name__ == '__main__':
     # app.MainLoop()
     
     
+def main():
+    """Parse command line options
+    
+    """
+    
+    usage = "usage: %prog [options]"
+    parser = OptionParser(usage)
+    
+    #
+    parser.add_option('-t','--translate',action="store_true", \
+            dest="translate",default=False,help="Print human readable " \
+            "packets. Default: %default")
+    #
+    
+    (options, args) = parser.parse_args()
+    
+    logger_method(translate=options.translate)
+        
+    
+    return
+    
+if __name__ == '__main__':
+    main()
