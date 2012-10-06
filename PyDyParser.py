@@ -55,7 +55,7 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     
     dict_tally_by = {     'cmd'   : PyDyPackets._cmd, 
                           'instr' : PyDyPackets._instr, 
-                          'id'    : PyDyPackets._id
+                          'id'    : PyDyPackets._id,
                           'len'   : PyDyPackets._len
                           }
     
