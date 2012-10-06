@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 from optparse import OptionParser
-import base64
-import StringIO
+
 
 # Global indices for getting bytes from packets;
 # I'm doing this so I can easily toss the FF FF leading bytes if desired...
@@ -10,8 +9,6 @@ _len = 3    #note length is N + 2 where N is # of parameters
 _instr = 4    # and N includes the Cmd value as well as the actual value bytes
 _cmd = 5
 _val = 6
-
-
 
 dictInstr = {0x01: ["ping      ", "0 "],
              0x02: ["read data ", "2 "],
@@ -71,6 +68,7 @@ dictCmd = { 0  : ["MODEL_NUMBER_L        ","?"],
             49 : ["PUNCH_H               ","?"]
             }
     
+    
 def show_instr():
     """ """
     print ""
@@ -91,30 +89,38 @@ def show_cmd():
         print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format(dictCmd[key][0],key,dictCmd[key][1])
     
     return
+       
+
+def sum_vals(byte_packet):
+    """Sum value bytes by shifting the higher bytes as needed
+    """
+    val = 0
+    # (byte_packet[_len] - 2 - 1) #length seems to be larger than it should be
+    for i in xrange(byte_packet[_len] - 2 -1 ):
+        val += byte_packet[_val+i]<<(8*i)
         
+    return val
     
-def translate_packet(byte_list):
+    
+def translate_packet(byte_packet):
     """ 
     Receives:
-    byte_list - a list of integers
+    byte_packet - a list of integers
     """
     
-    if len(byte_list) < _cmd: 
+    if len(byte_packet) < _cmd: 
         return ("bad packet; too short.",)
     
-    strID = "ID:{0:3}".format(byte_list[_id])
+    strID = "ID:{0:3}".format(byte_packet[_id])
     try:
-        strInst = dictInstr[ byte_list[_instr] ][1]
+        strInst = dictInstr[ byte_packet[_instr] ][0]
     except KeyError:
         # print "packet with bad instruction byte"
         return ("packet with bad instruction byte",)
     
-    strCmd = dictCmd[byte_list[_cmd]][1]
+    strCmd = dictCmd[byte_packet[_cmd]][0]
     
-    val = 0
-    # (byte_list[_len] - 2 - 1) #length seems to be larger than it should be
-    for i in xrange(byte_list[_len] - 2 -1 ):
-        val += byte_list[_val+i]<<(8*i)
+    val = sum_vals(byte_packet)
         
     strVal = "Val:{0:8}".format(val)
     
@@ -155,5 +161,6 @@ def main():
         
     return
 
+    
 if __name__ == '__main__':
     main()
