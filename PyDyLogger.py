@@ -10,8 +10,8 @@ import PyDyPackets
 import serial
 from optparse import OptionParser
 
-def logger_method(translate=False):
-    """ """
+def logger_method(translate=False,save_all=False):
+    """Method monitors serial port and stores packets to a file"""
     
                 
     # Serial port settings
@@ -24,22 +24,17 @@ def logger_method(translate=False):
                     format='(%(threadName)-10s) %(message)s',)
                         
     class BytePacket(object):
+        """Class for passing byte packet between threads
+        
+        Includes a Lock object, but this has not been used or found necessary.
+        """
+        
         def __init__(self, start=0):
             self.lock = threading.Lock()
             self.word = []
-            
-        def increment(self):
-            # logging.debug('Waiting for lock; {0}'.format(self.value))
-            print self.lock.acquire()
-                
-            try:
-                # logging.debug('Acquired lock')
-                self.value = self.value + 1
-            finally:
-                self.lock.release()
                 
     
-    def COMThread(byte_packet, saveAll=False, translate=False):
+    def COMThread(byte_packet, save_all=False, translate=False):
         """
         Receives:
         byte_packet - a BytePacket
@@ -62,17 +57,15 @@ def logger_method(translate=False):
                     if byte != None and byte !="": 
                         try:
                             byte_list.append(int(byte.encode('hex'),16))
-                            # print int(byte.encode('hex'),16), byte_list[-2:]
+                            
                         except ValueError as e:
                             logging.debug(( 'error', byte, e,))
                     
                     if byte_list[-2:] == [0xff,0xff]:
-                        # print "packet:", [0xff,0xff], byte_list[:-2]
-                        # print "old:", byte_packet.word
                         
                         checksumOK = byte_list[-3:-2] == [255 - (sum(byte_list[:-3]) % 256)]
                         
-                        if saveAll:
+                        if save_all:
                             byte_packet.word = [0xff,0xff] + byte_list[:-2]
                         elif checksumOK:
                             byte_packet.word = [0xff,0xff] + byte_list[:-2]
@@ -81,8 +74,9 @@ def logger_method(translate=False):
                             # logging.debug("\t".join(PyDyPackets.translate_packet(byte_packet.word)))
                             print "\t".join(PyDyPackets.translate_packet(byte_packet.word))
                         else:
-                            logging.debug(("packet:", byte_packet.word, "packet ok?:", \
-                                checksumOK ))
+                            logging.debug(("packet: " + 
+                                    " ".join(["{0:<3}".format(x) for x in byte_packet.word]) + \
+                                    "  packet ok?: " + str(checksumOK )))
                                 
                         byte_list = list()
                         
@@ -116,10 +110,11 @@ def logger_method(translate=False):
     myoldbytelist = None
     mybyte_list = BytePacket()
     
-    thread = threading.Thread(target=COMThread, args=(mybyte_list,),kwargs={'translate': translate})
+    thread = threading.Thread(target=COMThread, args=(mybyte_list,), \
+            kwargs={'translate': translate, 'save_all': save_all})
     # thread = threading.Thread(target=COMThread, args=(mybyte_list,))
     # thread = threading.Thread(target=COMThread, kwargs={'byte_packet': mybyte_list})
-    thread.daemon = True
+    thread.daemon = True # Thread is killed when main thread ends.
     thread.start()
     
     outputfile="default_out"
@@ -128,10 +123,8 @@ def logger_method(translate=False):
             while True:
                 if mybyte_list.word != myoldbytelist:
                     myoldbytelist = mybyte_list.word
-                    # logging.debug(("bahhaah", myoldbytelist,))
-                    # logging.debug("")
-                    fw.write(" ".join([str(x) for x in myoldbytelist]))
-                    fw.write("\n")
+                    
+                    fw.write(" ".join([str(x) for x in myoldbytelist]) + "\n")
                     
         except KeyboardInterrupt:
             print "KeyboardInterrupt caught! Closing {0}...".format(outputfile)
@@ -151,11 +144,14 @@ def main():
     parser.add_option('-t','--translate',action="store_true", \
             dest="translate",default=False,help="Print human readable " \
             "packets. Default: %default")
+    parser.add_option('-a','--all',action="store_true", \
+            dest="save_all",default=False,help="Optionally save all bytes/" \
+            "packets, including malformed packets. Default: %default")
     #
     
     (options, args) = parser.parse_args()
     
-    logger_method(translate=options.translate)
+    logger_method(translate=options.translate, save_all=options.save_all)
         
     
     return
