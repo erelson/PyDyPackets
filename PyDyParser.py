@@ -14,6 +14,8 @@ def filtering_method(stream,f_id=None,f_instr=None,f_cmd=None):
     f_instr - list/tuple of integers of instruction values to keep
     f_cmd - list/tuple of integers of command values to keep
     
+    Returns:
+    filtered - a list of filtered packets; each packet is a list of integers
     """
     
     f_id = is_list(f_id)
@@ -40,27 +42,36 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     
     Type depends on the value passed to the tally_by argument
     
-    Valid values for tally_by are 'cmd', 'instr', or 'id'.
+    Receives:
+    packet_list - a list of packets; each packet is a list of integers
+                 Alternately, packet_list will be read from a file if the
+                    file kwarg is passed.
+    tally_by - Which byte to tally packets by.
+                Valid values for tally_by are 'cmd', 'instr', 'id', 'len'.
     
     kwargs that are recognized:
     file : file of packets to read in
     """
     
-    dict_tally_by = {'cmd'   : PyDyPackets._cmd, 
+    dict_tally_by = {     'cmd'   : PyDyPackets._cmd, 
                           'instr' : PyDyPackets._instr, 
                           'id'    : PyDyPackets._id
+                          'len'   : PyDyPackets._len
                           }
     
     if tally_by not in dict_tally_by.keys():
         return 0
     
+    # read file into packet_list if 'file' kwarg was given
     if 'file' in kwargs:
         packet_list = list()
         with open(kwargs['file'], 'r') as fr:
             for line in fr:
                 packet_list.append( [int(x) for x  in line.split()] )
-    elif packet_list != None: # I think I forgot a logic case here??
+    # else if packet_list is already a list of packets...
+    elif packet_list != None: 
         pass
+    # I think I forgot a logic case here??
     else:
         return 0
         
@@ -79,6 +90,7 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
         # return 2
     
     return tallied_list
+    
     
 def is_list(f_thing):
     """Try various ways to assure that we have a list. 
@@ -158,6 +170,7 @@ def main():
         return
     
     # Do filtering
+    #  myfiltered is a list of packets; each pack is a list of integers.
     with open(args[0], 'r') as fr:
         myfiltered = filtering_method(fr, f_id=options.my_f_id, \
                 f_instr=options.my_f_instr, f_cmd=options.my_f_cmd)
