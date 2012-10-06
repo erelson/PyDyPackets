@@ -160,7 +160,7 @@ def main():
     # Do filtering
     with open(args[0], 'r') as fr:
         myfiltered = filtering_method(fr, f_id=options.my_f_id, \
-                f_cmd=options.my_f_cmd, f_instr=options.my_f_instr)
+                f_instr=options.my_f_instr, f_cmd=options.my_f_cmd)
     
     # Optionally write filtered results to a new file
     if options.output != '':
