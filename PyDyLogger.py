@@ -15,7 +15,8 @@ def logger_method(translate=False):
     
                 
     # Serial port settings
-    myPort = 16 #=17 #~ note: use port number - 1
+    myPort = 16 #=17 #~ note: use port number - 1 on windows OR:
+    # myPort = "COM17" # string specification works for windows
     myBaud = 1000000
     
     
