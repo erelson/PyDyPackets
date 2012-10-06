@@ -89,10 +89,13 @@ def is_list(f_thing):
     if f_thing == None: return None
     
     try:
-        f_thing = f_thing.split()
+        f_thing = f_thing.split(',')
         f_thing = [int(x) for x in f_thing]
-    except AttributeError: pass
-    except: f_thing = None
+    except AttributeError: pass # is probably a list already
+    except ValueError: 
+        print "Non-numeric filter(s) given: {0}".format(f_thing)
+        f_thing = None
+    # except: # may have forgotten an easy-to-get exception
         
     try: len(f_thing)
     except TypeError: f_thing = [f_thing]
@@ -161,10 +164,13 @@ def main():
     
     # Optionally write filtered results to a new file
     if options.output != '':
-        with open(options.output, 'w') as fw:
-            for packet in myfiltered:
-                fw.write(" ".join([str(x) for x in packet]) + "\n")
-        print "Filtered results written to {0}\n".format(options.output)
+        if len(myfiltered):
+            with open(options.output, 'w') as fw:
+                for packet in myfiltered:
+                    fw.write(" ".join([str(x) for x in packet]) + "\n")
+            print "Filtered results written to {0}\n".format(options.output)
+        else:
+            print "No packets satisfied the filters specified."
                 
     # Optionally tally packets and report        
     if options.my_tally_by != None:
