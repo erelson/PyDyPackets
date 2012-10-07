@@ -104,9 +104,11 @@ def sum_vals(byte_packet):
     
     
 def translate_packet(byte_packet):
-    """ 
+    """Method returns human readable translations of bytes in a packet
     Receives:
     byte_packet - a list of integers
+    
+    Returns: a tuple of strings: (strID, strInst, strCmd, strVal)
     """
     
     if len(byte_packet) < _cmd: 
