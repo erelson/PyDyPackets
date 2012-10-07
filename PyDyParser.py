@@ -2,9 +2,10 @@
 
 from optparse import OptionParser
 
-import PyDyPackets
+from PyDyPackets import _id, _cmd, _instr, _len
 
-def filtering_method(stream,f_id=None,f_instr=None,f_cmd=None):
+
+def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None):
     """ 
     
     Receives:
@@ -29,9 +30,9 @@ def filtering_method(stream,f_id=None,f_instr=None,f_cmd=None):
         
         bytes = [int(x) for x in bytes]
         
-        if (f_id == None or bytes[PyDyPackets._id] in f_id) and \
-                (f_cmd == None or bytes[PyDyPackets._cmd] in f_cmd) and \
-                (f_instr == None or bytes[PyDyPackets._instr] in f_instr):
+        if (f_id == None or bytes[_id] in f_id) and \
+                (f_cmd == None or bytes[_cmd] in f_cmd) and \
+                (f_instr == None or bytes[_instr] in f_instr):
             filtered.append(bytes)
     
     return filtered
@@ -53,10 +54,10 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     file : file of packets to read in
     """
     
-    dict_tally_by = {     'cmd'   : PyDyPackets._cmd, 
-                          'instr' : PyDyPackets._instr, 
-                          'id'    : PyDyPackets._id,
-                          'len'   : PyDyPackets._len
+    dict_tally_by = {     'cmd'   : _cmd, 
+                          'instr' : _instr, 
+                          'id'    : _id,
+                          'len'   : _len
                           }
     
     if tally_by not in dict_tally_by.keys():
