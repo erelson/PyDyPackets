@@ -2,7 +2,7 @@
 
 from optparse import OptionParser
 
-from PyDyPackets import _id, _cmd, _instr, _len
+from PyDyPackets import _id, _cmd, _instr, _len, translate_packet
 
 
 def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None):
@@ -157,10 +157,13 @@ def main():
     parser.add_option('-o','--output',action="store", \
             dest="output",default="filtered_out.txt",help="Specify output " \
             "file for filtered list of packets. Default: %default")
-    parser.add_option('-t','--tally',action="store", \
+    parser.add_option('-t','--translate',action="store_true", \
+            dest="translate",default=False,help="Write filtered packets in " \
+            "human-readable form. Default: %default")
+    parser.add_option('-T','--Tally',action="store", \
             dest="my_tally_by",default=None,help="Tally filtered packets by " \
             "command (cmd), instruction (instr) or servo ID (id).  E.g.: " \
-            "'-t id'. Default: %default")
+            "'-T id'. Default: %default")
     #
     
     (options, args) = parser.parse_args()
@@ -180,8 +183,13 @@ def main():
     if options.output != '':
         if len(myfiltered):
             with open(options.output, 'w') as fw:
-                for packet in myfiltered:
-                    fw.write(" ".join([str(x) for x in packet]) + "\n")
+                if options.translate: # translated output
+                    for packet in myfiltered:
+                        packet = translate_packet(packet)
+                        fw.write("\t".join(packet) + "\n")
+                else: # raw integer output
+                    for packet in myfiltered:
+                        fw.write(" ".join([str(x) for x in packet]) + "\n")
             print "Filtered results written to {0}\n".format(options.output)
         else:
             print "No packets satisfied the filters specified."
