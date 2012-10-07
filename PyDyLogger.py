@@ -4,7 +4,7 @@ import threading
 import time
 import logging  # prevents different threads' output from mixing
 
-import PyDyPackets
+from PyDyPackets import translate_packet
 
 import serial
 from optparse import OptionParser
@@ -81,8 +81,8 @@ def logger_method(translate=False, save_all=False):
                             byte_packet.word = [0xff,0xff] + byte_list[:-2]
                         
                         if translate:
-                            # logging.debug("\t".join(PyDyPackets.translate_packet(byte_packet.word)))
-                            print "\t".join(PyDyPackets.translate_packet(byte_packet.word))
+                            # logging.debug("\t".join(translate_packet(byte_packet.word)))
+                            print "\t".join(translate_packet(byte_packet.word))
                         else:
                             logging.debug(("packet: " + 
                                     " ".join(["{0:<3}".format(x) for x in byte_packet.word]) + \
@@ -162,7 +162,7 @@ def main():
     (options, args) = parser.parse_args()
     
     logger_method(translate=options.translate, save_all=options.save_all)
-        
+    
     
     return
 
