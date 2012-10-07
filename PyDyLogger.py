@@ -1,6 +1,5 @@
 #! /usr/bin/env python
-import base64
-import StringIO
+
 import threading
 import time
 import logging  # prevents different threads' output from mixing
@@ -10,9 +9,14 @@ import PyDyPackets
 import serial
 from optparse import OptionParser
 
-def logger_method(translate=False,save_all=False):
-    """Method monitors serial port and stores packets to a file"""
+
+def logger_method(translate=False, save_all=False):
+    """Method opens serial port and stores received byte packets.
     
+    Receives:
+    save_all - Controls whether malformed packets are saved
+    translate - If true, packets are displayed in human readable form
+    """
                 
     # Serial port settings
     myPort = 16 #=17 #~ note: use port number - 1 on windows OR:
@@ -35,9 +39,15 @@ def logger_method(translate=False,save_all=False):
                 
     
     def COMThread(byte_packet, save_all=False, translate=False):
-        """
+        """Method monitors serial port and sends packets to output
+        
+        Method is intended to be run in a threading.thread.
+        
         Receives:
-        byte_packet - a BytePacket
+        byte_packet - a BytePacket object allowing external access to the
+                        current packet
+        save_all - Controls whether malformed packets are saved
+        translate - If true, packets are displayed in human readable form
         """
         
         byte_string = ""
@@ -46,7 +56,7 @@ def logger_method(translate=False,save_all=False):
         
         while True:
         
-            # If xbee serial port was opened and is open.
+            # If serial port was opened and is open.
             if serExist and ser.isOpen():
                 # read all bytes in the buffer
                 byte = None
@@ -129,7 +139,7 @@ def logger_method(translate=False,save_all=False):
         except KeyboardInterrupt:
             print "KeyboardInterrupt caught! Closing {0}...".format(outputfile)
     
-    # app.MainLoop()
+    return
     
     
 def main():
@@ -155,6 +165,7 @@ def main():
         
     
     return
+
     
 if __name__ == '__main__':
     main()
