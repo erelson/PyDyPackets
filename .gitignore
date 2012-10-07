@@ -16,6 +16,12 @@ local.properties
 .settings/
 .loadpath
 
+# A few custom files that are for testing
+default_out
+filtered_out.txt
+junk.py
+Test.py
+
 # External tool builders
 .externalToolBuilders/
 
