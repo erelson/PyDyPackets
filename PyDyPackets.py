@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+
 from optparse import OptionParser
 
 
@@ -142,14 +143,9 @@ def main():
     parser.add_option('-c','--commands',action="store_true", \
             dest="show_cmd",default=False,help="Print list of command " \
             "bytes (e.g. GOAL_POSITION). Default: %default")
-    parser.add_option('-t','--test',action="store", \
-            dest="listtest",default=None,help="Print list of command " \
-            "bytes (e.g. GOAL_POSITION). Default: %default")
     #
     
     (options, args) = parser.parse_args()
-    
-    print options.listtest
     
     if options.show_instr:
         show_instr()
