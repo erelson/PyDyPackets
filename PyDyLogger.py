@@ -90,9 +90,11 @@ def logger_method(translate=False, save_all=False):
                                 
                         byte_list = list()
                         
-                    # arbitrary threshold to keep byte_list at a reasonable size.
-                    if len(byte_list) > 12:
+                    # threshold to keep byte_list at a reasonable size.
+                    # 108 chosen as 4 + 4 + 20 * 5, e.g. sending speed/position to 20 servos...
+                    if len(byte_list) > 108: 
                         byte_list = list()
+                        
                     # byte_string = byte_string + byte
                     # byte_list.append(int(byte.encode('hex'),16))
                     # if the end of packet symbol is seen...
