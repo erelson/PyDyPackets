@@ -112,7 +112,8 @@ def translate_packet(byte_packet):
     """
     
     if len(byte_packet) < _cmd: 
-        return ("bad packet; too short.",)
+        return ("bad packet; too short. expected: {0}; received: {1}".format( \
+                _cmd, len(byte_packet)),)
     
     strID = "ID:{0:3}".format(byte_packet[_id])
     try:
