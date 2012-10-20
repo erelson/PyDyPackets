@@ -61,9 +61,8 @@ def logger_method(translate=False, save_all=False):
                 # read all bytes in the buffer
                 byte = None
                 while ser.inWaiting():
-                    
+                    # Read bytes and add them to byte_list
                     byte = ser.read()
-                    
                     if byte != None and byte !="": 
                         try:
                             byte_list.append(int(byte.encode('hex'),16))
@@ -71,6 +70,7 @@ def logger_method(translate=False, save_all=False):
                         except ValueError as e:
                             logging.debug(( 'error', byte, e,))
                     
+                    # Identify and vet packets
                     if byte_list[-2:] == [0xff,0xff]:
                         
                         checksumOK = byte_list[-3:-2] == [255 - (sum(byte_list[:-3]) % 256)]

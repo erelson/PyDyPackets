@@ -1,5 +1,9 @@
 #! /usr/bin/env python
 
+""" Module PyDyParser currently handles filtering and tallying packets
+
+"""
+
 from optparse import OptionParser
 
 from PyDyPackets import _id, _cmd, _instr, _len, translate_packet
