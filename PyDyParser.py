@@ -6,18 +6,20 @@
 
 from optparse import OptionParser
 
-from PyDyPackets import _id, _cmd, _instr, _len, translate_packet
+from PyDyPackets import _id, _cmd, _instr, _len, _synclen, _syncval, \
+                        translate_packet
 
 
-def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None):
-    """ 
+def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
+            sync_split=False):
+    """Returns a filtered list of byte packets from a file stream
     
     Receives:
     stream - a file stream, e.g. via open('file', 'r')
     (optional:)
     f_id - list/tuple of integers of ID #s to keep
     f_instr - list/tuple of integers of instruction values to keep
-    f_cmd - list/tuple of integers of command values to keep
+    f_cmd - list/tuple of integers of command values (start addresses) to keep
     
     Returns:
     filtered - a list of filtered packets; each packet is a list of integers
@@ -29,18 +31,31 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None):
     
     filtered = list()
     for line in stream:
-        bytes = line.split()
-        if bytes == []: continue
+        packet = line.split()
+        if packet == []: continue
         
-        bytes = [int(x) for x in bytes]
+        packet = [int(x) for x in bytes]
         
-        if (f_id == None or bytes[_id] in f_id) and \
-                (f_cmd == None or bytes[_cmd] in f_cmd) and \
-                (f_instr == None or bytes[_instr] in f_instr):
-            filtered.append(bytes)
+        # check packet contents against the filters
+        if (f_id == None or packet[_id] in f_id or sync_split) and \
+                (f_cmd == None or packet[_cmd] in f_cmd) and \
+                (f_instr == None or packet[_instr] in f_instr):
+            # split up sync-write packets
+            if sync_split and packet[_instr] == 0x83:
+                for subpacket in make_packets_from_sync_write_packet(packet):
+                    if (f_id == None or subpacket[_id] in f_id):
+                        filtered.append(subpacket):
+            else:
+                filtered.append(packet)
     
     return filtered
 
+    
+def make_packets_from_sync_write_packet():
+    """
+    """
+    pass
+    return
     
 def tally_packets(packet_list, tally_by='cmd', **kwargs):
     """Method reports the # of packets of each type
@@ -84,7 +99,8 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     
     # First create list of the nth byte from each packet
     # try:
-    tally_list = [packet[dict_tally_by[tally_by]] for packet in packet_list if packet != [] ]
+    tally_list = [packet[dict_tally_by[tally_by]] for \
+            packet in packet_list if packet != [] ]
     tallied_list = tally(tally_list)
     print "Tally results:"
     print "Val:   Instances:"
@@ -168,6 +184,11 @@ def main():
             dest="my_tally_by",default=None,help="Tally filtered packets by " \
             "command (cmd), instruction (instr) or servo ID (id).  E.g.: " \
             "'-T id'. Default: %default")
+    parser.add_option('-S','--SyncWrite',action="store_true", \
+            dest="sync_split",default=None,help="Split up sync-write packets " \
+            "when filtering to look for contents satisfying other criteria. " \
+            "Can also be used just to create individual packets. " \
+            "Default: %default")
     #
     
     (options, args) = parser.parse_args()
@@ -181,7 +202,8 @@ def main():
     #  myfiltered is a list of packets; each pack is a list of integers.
     with open(args[0], 'r') as fr:
         myfiltered = filtering_method(fr, f_id=options.my_f_id, \
-                f_instr=options.my_f_instr, f_cmd=options.my_f_cmd)
+                f_instr=options.my_f_instr, f_cmd=options.my_f_cmd \
+                sync_split=options.sync_split)
     
     # Optionally write filtered results to a new file
     if options.output != '':
