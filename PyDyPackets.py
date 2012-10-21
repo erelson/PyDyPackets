@@ -6,24 +6,36 @@ from optparse import OptionParser
 # Global indices for getting bytes from packets;
 # I'm doing this so I can easily toss the FF FF leading bytes if desired...
 _id = 2
-_len = 3    #note length is N + 2 where N is # of parameters
-_instr = 4    # and N includes the Cmd value as well as the actual value bytes
-_cmd = 5
+_len = 3     # note length is N + 2 where N is # of parameters
+_instr = 4   #  and N includes the Cmd value as well as the actual value bytes
+_cmd = 5     # address to start writing or reading data at
 _val = 6
-_synclen = 6 #where the length of subpackets is specified for sync-write
-_syncval = 7 #where the first subpacket begins for sync-writes
+_synclen = 6 # where the length of subpackets is specified for sync-write
+_syncval = 7 # where the first subpacket begins for sync-writes
+_readcmd = 5 # address to start reading data at 
+_readlen = 6 # number of registers read-data packet is requesting
 
-dictInstr = {0x01: ["ping      ", "0 "],
+#           #instr  # name        #???
+dictInstr = {0x00: ["status OK;", "0 "],
+             0x01: ["ping      ", "0 "],
+            #0x01 is also input voltage error
              0x02: ["read data ", "2 "],
+            #0x02 is also angle limit error
              0x03: ["write data", "2~"],
              0x04: ["reg write ", "2~"],
+            #0x04 is also overheating error
              0x05: ["action    ", "0 "],
              0x06: ["reset     ", "0 "],
+            #0x08 is range error bit
+            #0x10 is checksum error bit
+            #0x20 is overload error bit
+            #0x40 is instruction error bit
+            #0x80 is an unused error bit
              0x83: ["sync write", "4~"]
             }
             
 #          #cmd   # name                  #length of value
-dictCmd = { 0  : ["MODEL_NUMBER_L        ",1],
+dictWriteCmd = { 0  : ["MODEL_NUMBER_L        ",2],
             1  : ["MODEL_NUMBER_H        ",1],
             2  : ["VERSION               ",1],
             3  : ["SERVO_ID              ",1],
@@ -38,7 +50,7 @@ dictCmd = { 0  : ["MODEL_NUMBER_L        ",1],
             13 : ["HIGH_LIMIT_VOLTAGE    ",1],
             14 : ["MAX_TORQUE_L          ",2],
             15 : ["MAX_TORQUE_H          ",1],
-            16 : ["RETURN_LEVEL          ",1],
+            16 : ["STATUS_RETURN_LEVEL   ",1],
             17 : ["ALARM_LED             ",1],
             18 : ["ALARM_SHUTDOWN        ",1],
             20 : ["DOWN_CALIBRATION_L    ",2],
@@ -89,8 +101,8 @@ def show_cmd():
     print ""
     print "In command line arguments (-c), enter the number value in column 2"
     print "\nCommand:                  Value:        valid range"
-    for key in dictCmd:
-        print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format(dictCmd[key][0],key,dictCmd[key][1])
+    for key in dictWriteCmd:
+        print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format(dictWriteCmd[key][0],key,dictWriteCmd[key][1])
     
     return
        
@@ -129,13 +141,13 @@ def vals_split_and_translate(vals, mycmd):
     while cnt < len(vals):
         # handle last byte in vals
         if cnt + 1 == len(vals):
-            cmdList += [dictCmd[mycmd+cnt][0], "Val:{0:8}".format( \
+            cmdList += [dictWriteCmd[mycmd+cnt][0], "Val:{0:8}".format( \
                     sum_vals_2(vals[cnt:cnt+1]) ) ]
             cnt += 1
         else:
-            cmdList += [dictCmd[mycmd+cnt][0], "Val:{0:8}".format( \
-                       sum_vals_2(vals[cnt:cnt+dictCmd[mycmd+cnt][1]])) ]
-            cnt += dictCmd[mycmd+cnt][1]
+            cmdList += [dictWriteCmd[mycmd+cnt][0], "Val:{0:8}".format( \
+                       sum_vals_2(vals[cnt:cnt+dictWriteCmd[mycmd+cnt][1]])) ]
+            cnt += dictWriteCmd[mycmd+cnt][1]
     return cmdList
     
     
@@ -157,8 +169,7 @@ def translate_packet(byte_packet):
     if len(byte_packet) < _cmd: 
         return ("bad packet; too short. expected: {0}; received: {1}".format( \
                 _cmd, len(byte_packet)),)
-    
-    strID = "ID:{0:3}".format(byte_packet[_id])
+                
     try:
         strInst = dictInstr[ byte_packet[_instr] ][0]
     except KeyError:
@@ -170,12 +181,7 @@ def translate_packet(byte_packet):
     #  e.g. setting goal position & moving speed, each with 2 value bytes
     mycmd = byte_packet[_cmd]
     
-    
-    # cmdList = [mycmd, sum_vals_2( byte_packet[_val:_val+dictCmd[mycmd][1] ) ]
-        
-
-    
-    if byte_packet[_instr] == 0x83:
+    if byte_packet[_instr] == 0x83: # sync-write packet
         ret_list = ["Sync-write", ]
         # iterate from first value byte, to byte before last byte (checksum),
         #  and iterate by length+1 bytes (ID + values) at a time
@@ -189,12 +195,16 @@ def translate_packet(byte_packet):
             ret_list += subpacketTranslated
             
         return ret_list
-            
-    else:
-        # strCmd = dictCmd[byte_packet[_cmd]][0]
-        # val = sum_vals(byte_packet)
-        # strVal = "Val:{0:8}".format(val)
         
+    elif byte_packet[_instr] == 0x02: # read-data packet
+        strID = "ID:{0:3}".format(byte_packet[_id])
+        retlist = [strID, strInst]
+        for cmd in xrange(byte_packet[_readcmd], byte_packet[_readcmd]+byte_packet[_readlen]):
+            retlist.append(dictWriteCmd[cmd][0].strip())
+        return retlist
+        
+    else: # write-data or reg-write packet
+        strID = "ID:{0:3}".format(byte_packet[_id])
         strCmdsVals = vals_split_and_translate(byte_packet[_val:], mycmd)
         
         return [strID, strInst] + strCmdsVals
