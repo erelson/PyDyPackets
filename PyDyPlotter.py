@@ -15,13 +15,14 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
                     make_plot=True):
     """A file stream of packets is filtered and plotted
     
-    Receives:
-    fr - file stream, e.g. via open('file', 'r')
+    Receives
+    ----------
+    fr : file stream, e.g. via open('file', 'r')
     (optional)
-    id - list/tuple of integers of ID #s to keep
-    instr - list/tuple of integers of instruction values to keep
-    cmd - list/tuple of integers of command values to keep
-    subplot_dict - A custom dictionary with keys starting from 0.  Each key
+    id : list/tuple of integers of ID #s to keep
+    instr : list/tuple of integers of instruction values to keep
+    cmd : list/tuple of integers of command values to keep
+    subplot_dict : A custom dictionary with keys starting from 0.  Each key
             corresponds with a subplot specification.  Typically, these defines 
             a 3-digit subplot value, where digits are (1) # columns; (2) # rows;
             (3) plotnum. Plotnum goes row by row, filling columns of each row.
@@ -29,10 +30,12 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
             modify dict_subplot in PyDyPlotter.py.
             See also:
             http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplot
-    make_plot - Boolean; if False, plotting is skipped.
+    make_plot : boolean
+        If False, plotting is skipped.
     
-    Returns:
-    plotting_dict - the dictionary storing the lists that would be plotted
+    Returns
+    ----------
+    plotting_dict : the dictionary storing the lists that would be plotted
     """
     
     # get list of packets, each packet is a list of integers

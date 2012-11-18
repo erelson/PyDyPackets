@@ -43,11 +43,15 @@ def logger_method(translate=False, save_all=False):
         
         Method is intended to be run in a threading.thread.
         
-        Receives:
-        byte_packet - a BytePacket object allowing external access to the
-                        current packet
-        save_all - Controls whether malformed packets are saved
-        translate - If true, packets are displayed in human readable form
+        Receives
+        ----------
+        byte_packet : BytePacket object
+            a BytePacket object allowing external access to the
+            current packet
+        save_all : boolean
+            Controls whether malformed packets are saved
+        translate : boolean
+            If true, packets are displayed in human readable form
         """
         
         byte_string = ""

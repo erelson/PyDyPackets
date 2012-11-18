@@ -14,20 +14,26 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
             sync_split=False):
     """Returns a filtered list of byte packets from a file stream
     
-    Receives:
-    stream - a file stream, e.g. via open('file', 'r')
-    (optional:)
-    f_id - list/tuple of integers of ID #s to keep
-    f_instr - list/tuple of integers of instruction values to keep
-    f_cmd - list/tuple of integers of command values (start addresses) to keep
+    Receives
+    ----------
+    stream : a file stream, e.g. via open('file', 'r')
+    (**optional**)
+    f_id : list/tuple of integers
+        ID #s to keep
+    f_instr : list/tuple of integers 
+        Instruction values to keep
+    f_cmd : list/tuple of integers 
+        Command values (start addresses) to keep
     
-    Returns:
-    filtered - a list of filtered packets; each packet is a list of integers
+    Returns
+    ----------
+    filtered : list of lists of integers
+        A list of filtered packets; each packet is a list of integers
     """
     
-    f_id = is_list(f_id)
-    f_instr = is_list(f_instr)
-    f_cmd = is_list(f_cmd)
+    f_id = _is_list(f_id)
+    f_instr = _is_list(f_instr)
+    f_cmd = _is_list(f_cmd)
     
     filtered = list()
     for line in stream:
@@ -62,15 +68,20 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     
     Type depends on the value passed to the tally_by argument
     
-    Receives:
-    packet_list - a list of packets; each packet is a list of integers
-                 Alternately, packet_list will be read from a file if the
-                    file kwarg is passed.
-    tally_by - Which byte to tally packets by.
-                Valid values for tally_by are 'cmd', 'instr', 'id', 'len'.
+    Receives
+    ----------
+    packet_list : list of lists of integers
+        A list of packets; each packet is a list of integers
+        Alternately, packet_list will be read from a file if the file kwarg is
+        passed.
+    tally_by : string
+        Which byte to tally packets by.
+        Valid values for tally_by are 'cmd', 'instr', 'id', 'len'.
     
-    kwargs that are recognized:
-    file : file of packets to read in
+    kwargs that are recognized
+    ----------
+    file : string
+        file of packets to read in
     """
     
     dict_tally_by = {     'cmd'   : _cmd, 
@@ -113,7 +124,7 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     return tallied_list
     
     
-def is_list(f_thing):
+def _is_list(f_thing):
     """Try various ways to assure that we have a list. 
     
     This is just for the heck of it... excessive flexibility...
@@ -144,6 +155,15 @@ def tally(list):
     Method is analogous to the Mathematica function Tally[].
     Method adapted from:
     http://bigbadcode.com/2007/04/04/count-the-duplicates-in-a-python-list/
+    
+    Receives
+    ----------
+    list : list of anything
+    
+    Returns
+    ----------
+    tally list : list of tuples
+        Each tuple is of the form (item, # occurences of item)
     """
     
     uniqueSet = []

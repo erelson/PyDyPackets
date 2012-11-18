@@ -134,9 +134,11 @@ def sum_vals_2(bytes):
 def vals_split_and_translate(vals, mycmd):
     """Return translated list of single or multiple commands
     
-    Receives:
-    vals - list of integers
-    mycmd - integer of register to start writing bytes at
+    Receives
+    ----------
+    vals : list of integers
+        ...
+    mycmd : integer of register to start writing bytes at
     """
     cnt = 0
     cmdList = list()
@@ -162,10 +164,12 @@ def translate_packet(byte_packet):
     """Method returns partially human readable translations of bytes in a packet
     The goal of this method is not well quantified yet...
     
-    Receives:
-    byte_packet - a list of integers
+    Receives
+    ----------
+    byte_packet : a list of integers
     
-    Returns:
+    Returns
+    ----------
     a list of strings;
             If using a simple packet structure, generally of the form:
                 [strID, strInst, strCmd, strVal]
