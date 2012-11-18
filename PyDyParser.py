@@ -44,7 +44,7 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
             if sync_split and packet[_instr] == 0x83:
                 for subpacket in make_packets_from_sync_write_packet(packet):
                     if (f_id == None or subpacket[_id] in f_id):
-                        filtered.append(subpacket):
+                        filtered.append(subpacket)
             else:
                 filtered.append(packet)
     
