@@ -34,7 +34,7 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
         packet = line.split()
         if packet == []: continue
         
-        packet = [int(x) for x in bytes]
+        packet = [int(x) for x in packet]
         
         # check packet contents against the filters
         if (f_id == None or packet[_id] in f_id or sync_split) and \
