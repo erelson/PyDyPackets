@@ -35,7 +35,7 @@ dictInstr = {0x00: ["status OK;", "0 "],
             }
             
 #          #cmd   # name                  #length of value
-dictWriteCmd = { 0  : ["MODEL_NUMBER_L        ",2],
+dictAXCmd = { 0  : ["MODEL_NUMBER_L        ",2],
             1  : ["MODEL_NUMBER_H        ",1],
             2  : ["VERSION               ",1],
             3  : ["SERVO_ID              ",1],
@@ -101,8 +101,8 @@ def show_cmd():
     print ""
     print "In command line arguments (-c), enter the number value in column 2"
     print "\nCommand:                  Value:        valid range"
-    for key in dictWriteCmd:
-        print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format(dictWriteCmd[key][0],key,dictWriteCmd[key][1])
+    for key in dictAXCmd:
+        print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format(dictAXCmd[key][0],key,dictAXCmd[key][1])
     
     return
        
@@ -141,13 +141,13 @@ def vals_split_and_translate(vals, mycmd):
     while cnt < len(vals):
         # handle last byte in vals
         if cnt + 1 == len(vals):
-            cmdList += [dictWriteCmd[mycmd+cnt][0], "Val:{0:8}".format( \
+            cmdList += [dictAXCmd[mycmd+cnt][0], "Val:{0:8}".format( \
                     sum_vals_2(vals[cnt:cnt+1]) ) ]
             cnt += 1
         else:
-            cmdList += [dictWriteCmd[mycmd+cnt][0], "Val:{0:8}".format( \
-                       sum_vals_2(vals[cnt:cnt+dictWriteCmd[mycmd+cnt][1]])) ]
-            cnt += dictWriteCmd[mycmd+cnt][1]
+            cmdList += [dictAXCmd[mycmd+cnt][0], "Val:{0:8}".format( \
+                       sum_vals_2(vals[cnt:cnt+dictAXCmd[mycmd+cnt][1]])) ]
+            cnt += dictAXCmd[mycmd+cnt][1]
     return cmdList
     
     
@@ -200,7 +200,7 @@ def translate_packet(byte_packet):
         strID = "ID:{0:3}".format(byte_packet[_id])
         retlist = [strID, strInst]
         for cmd in xrange(byte_packet[_readcmd], byte_packet[_readcmd]+byte_packet[_readlen]):
-            retlist.append(dictWriteCmd[cmd][0].strip())
+            retlist.append(dictAXCmd[cmd][0].strip())
         return retlist
         
     else: # write-data or reg-write packet
