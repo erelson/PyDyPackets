@@ -94,10 +94,6 @@ def main():
     parser.add_option('-o','--output',action="store", \
             dest="output",default="filtered_out.txt",help="Specify output " \
             "file for filtered list of packets. Default: %default")
-    parser.add_option('-t','--tally',action="store", \
-            dest="my_tally_by",default=None,help="Tally filtered packets by " \
-            "command (cmd), instruction (instr) or servo ID (id).  E.g.: " \
-            "'-t id'. Default: %default")
     #
     
     (options, args) = parser.parse_args()
