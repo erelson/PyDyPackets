@@ -140,16 +140,21 @@ def vals_split_and_translate(vals, mycmd):
     """
     cnt = 0
     cmdList = list()
-    while cnt < len(vals):
-        # handle last byte in vals
-        if cnt + 1 == len(vals):
-            cmdList += [dictAXCmd[mycmd+cnt][0], "Val:{0:8}".format( \
-                    sum_vals_2(vals[cnt:cnt+1]) ) ]
-            cnt += 1
-        else:
-            cmdList += [dictAXCmd[mycmd+cnt][0], "Val:{0:8}".format( \
-                       sum_vals_2(vals[cnt:cnt+dictAXCmd[mycmd+cnt][1]])) ]
-            cnt += dictAXCmd[mycmd+cnt][1]
+    try:
+        while cnt < len(vals):
+            # handle last byte in vals
+            if cnt + 1 == len(vals):
+                cmdList += [dictAXCmd[mycmd+cnt][0], "Val:{0:8}".format( \
+                        sum_vals_2(vals[cnt:cnt+1]) ) ]
+                cnt += 1
+            else:
+                cmdList += [dictAXCmd[mycmd+cnt][0], "Val:{0:8}".format( \
+                           sum_vals_2(vals[cnt:cnt+dictAXCmd[mycmd+cnt][1]])) ]
+                cnt += dictAXCmd[mycmd+cnt][1]
+    except KeyError:
+        print "Bad packet?:", vals
+        raise KeyError
+
     return cmdList
     
     
