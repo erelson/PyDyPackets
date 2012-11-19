@@ -81,6 +81,7 @@ def logger_method(translate=False, save_all=False):
                         checksumOK = byte_list[-3] == \
                                 255 - (sum(byte_list[:-3]) % 256)
                         
+                        # Note: saved packets have FF FF prepended to them
                         if save_all:
                             byte_packet.word = [0xff,0xff] + byte_list[:-2]
                         elif checksumOK:
