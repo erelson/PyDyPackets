@@ -219,7 +219,7 @@ def translate_packet(byte_packet):
         
     else: # write-data or reg-write packet
         strID = "ID:{0:3}".format(byte_packet[_id])
-        strCmdsVals = vals_split_and_translate(byte_packet[_val:], mycmd)
+        strCmdsVals = vals_split_and_translate(byte_packet[_val:-1], mycmd)
         
         return [strID, strInst] + strCmdsVals
     
