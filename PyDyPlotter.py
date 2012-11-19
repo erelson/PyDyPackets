@@ -9,7 +9,9 @@ import PyDyParser
 from PyDyPackets import _id, _cmd, _instr, _len, _val, sum_vals
 
 
-dict_subplot = { 0: 311, 1: 312, 2: 313 }
+dict_subplot = { 0: 311, 1: 312, 2: 313 } # 3x1 subplots per plot
+#dict_subplot = { 0: 411, 1: 412, 2: 413, 3: 414 } # 4x1 subplots per plot
+#dict_subplot = { 0: 221, 1: 222, 2: 223, 3: 224 } # 2x2 subplots per plot
 
 def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
                     make_plot=True):
@@ -17,19 +19,24 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
     
     Receives
     ----------
-    fr : file stream, e.g. via open('file', 'r')
+    fr : file stream
+        e.g. via ``open('file', 'r')``
     (optional)
-    id : list/tuple of integers of ID #s to keep
-    instr : list/tuple of integers of instruction values to keep
-    cmd : list/tuple of integers of command values to keep
-    subplot_dict : A custom dictionary with keys starting from 0.  Each key
-            corresponds with a subplot specification.  Typically, these defines 
-            a 3-digit subplot value, where digits are (1) # columns; (2) # rows;
-            (3) plotnum. Plotnum goes row by row, filling columns of each row.
-            You can specify this dictionary when calling plot_trends, or just 
-            modify dict_subplot in PyDyPlotter.py.
-            See also:
-            http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplot
+    id : list/tuple of integers
+        ID #s to keep
+    instr : list/tuple of integers
+        instruction values to keep
+    cmd : list/tuple of integers
+        command values to keep
+    subplot_dict : dictionary
+        A custom dictionary with keys starting from 0.  Each key
+        corresponds with a subplot specification.  Typically, these defines 
+        a 3-digit subplot value, where digits are (1) # columns; (2) # rows;
+        (3) plotnum. Plotnum goes row by row, filling columns of each row.
+        You can specify this dictionary when calling plot_trends, or just 
+        modify dict_subplot in PyDyPlotter.py.
+        See also:
+        http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplot
     make_plot : boolean
         If False, plotting is skipped.
     
@@ -47,12 +54,21 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
             plotting_dict[packet[_id]].append(sum_vals(packet))
         else:
             plotting_dict[packet[_id]] = [ sum_vals(packet) ]
-            
+    
+    # plotkeys is the list (and order) of plots to make
+    if id is None:
+        plotkeys = plotting_dict.keys()
+    else:
+        plotkeys = PyDyParser._is_list(id)
+        # This preserves the user-specified order, but tosses IDs that weren't
+        # in the filtered packets.
+        plotkeys = [x for x in plotkeys if x in plotting_dict.keys()]
+        
     # Generate the plots
     fignum = 1
     plt.figure(1)
     cnt = 0;
-    for key in plotting_dict.keys():
+    for key in plotkeys:
         # If reached the limit of plots/window
         if cnt == len(subplot_dict.keys()):
             fignum += 1
