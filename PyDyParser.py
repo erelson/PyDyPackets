@@ -126,16 +126,25 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     
 def _is_list(f_thing):
     """Try various ways to assure that we have a list. 
-    
     This is just for the heck of it... excessive flexibility...
+    
+    Receives
+    ---------
+    f_thing : string or list
+    
+    Returns
+    ----------
+    f_thing : list
     """
     
-    if f_thing == None: return None
+    if f_thing == None: 
+        return None
     
     try:
         f_thing = f_thing.split(',')
         f_thing = [int(x) for x in f_thing]
-    except AttributeError: pass # is probably a list already
+    except AttributeError: 
+        pass # is probably a list already
     except ValueError: 
         print "Non-numeric filter(s) given: {0}".format(f_thing)
         f_thing = None

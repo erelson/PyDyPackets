@@ -175,17 +175,13 @@ def translate_packet(byte_packet):
     ----------
     retlist : list of strings
         If using a simple packet structure, generally of the form:
-            ```
             [strID, strInst, strCmd1, strVal1, strCmd2, strVal2, ...]
-            ```
         Else if using sync-write packets, a list for each servo, and each list
         starts with a newline and tab:
-            ```
             ['Sync-write',
             ['\n\t'+strID1, strCmd1, strVal1, strCmd2, strVal2, ...],
             ['\n\t'+strID2, strCmd1, strVal1, strCmd2, strVal2, ...],
             ....]
-            ```
     """
     
     if len(byte_packet) < _cmd: 
