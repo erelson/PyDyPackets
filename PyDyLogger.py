@@ -74,10 +74,12 @@ def logger_method(translate=False, save_all=False):
                         except ValueError as e:
                             logging.debug(( 'error', byte, e,))
                     
-                    # Identify and vet packets
+                    # Identify and vet packets; 
+                    # We use FF FF to indicate *end* of packet...
                     if byte_list[-2:] == [0xff,0xff]:
                         
-                        checksumOK = byte_list[-3:-2] == [255 - (sum(byte_list[:-3]) % 256)]
+                        checksumOK = byte_list[-3:-2] == \
+                                [255 - (sum(byte_list[:-3]) % 256)]
                         
                         if save_all:
                             byte_packet.word = [0xff,0xff] + byte_list[:-2]
@@ -88,14 +90,16 @@ def logger_method(translate=False, save_all=False):
                             # logging.debug("\t".join(translate_packet(byte_packet.word)))
                             print "\t".join(translate_packet(byte_packet.word))
                         else:
-                            logging.debug(("packet: " + 
-                                    " ".join(["{0:<3}".format(x) for x in byte_packet.word]) + \
+                            logging.debug(("packet: " + \
+                                    " ".join(["{0:<3}".format(x) \
+                                    for x in byte_packet.word]) + \
                                     "  packet ok?: " + str(checksumOK )))
                                 
                         byte_list = list()
                         
                     # threshold to keep byte_list at a reasonable size.
-                    # 108 chosen as 4 + 4 + 20 * 5, e.g. sending speed/position to 20 servos...
+                    # 108 chosen as 4 + 4 + 20 * 5, e.g. sending speed/position
+                    #  to 20 servos...
                     if len(byte_list) > 108: 
                         byte_list = list()
                         
@@ -115,7 +119,8 @@ def logger_method(translate=False, save_all=False):
     # Opening the serial port
     try:
         ser = serial.Serial(myPort,myBaud) #port number - 1
-        print "Successfully connected to port {0} at {1} baud".format(myPort+1,myBaud)
+        print "Successfully connected to port {0} at {1} baud".format( \
+                myPort+1,myBaud)
         serExist = 1
     
     except serial.SerialException:

@@ -93,7 +93,8 @@ def show_instr():
     print "In command line arguments (-i), enter the numeric value in column 3."
     print "\nInstruction:     Value:       # of parameters  "
     for key in dictInstr:
-        print " {0:15}0x{1:<4X}{1:<4}{2:>12}".format(dictInstr[key][0],key,dictInstr[key][1])
+        print " {0:15}0x{1:<4X}{1:<4}{2:>12}".format( \
+                dictInstr[key][0],key,dictInstr[key][1])
         
     return
     
@@ -104,7 +105,8 @@ def show_cmd():
     print "In command line arguments (-c), enter the number value in column 2"
     print "\nCommand:                  Value:        valid range"
     for key in dictAXCmd:
-        print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format(dictAXCmd[key][0],key,dictAXCmd[key][1])
+        print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format( \
+                dictAXCmd[key][0],key,dictAXCmd[key][1])
     
     return
        
@@ -210,7 +212,8 @@ def translate_packet(byte_packet):
     elif byte_packet[_instr] == 0x02: # read-data packet
         strID = "ID:{0:3}".format(byte_packet[_id])
         retlist = [strID, strInst]
-        for cmd in xrange(byte_packet[_readcmd], byte_packet[_readcmd]+byte_packet[_readlen]):
+        for cmd in xrange(byte_packet[_readcmd], byte_packet[_readcmd] + \
+                byte_packet[_readlen]):
             retlist.append(dictAXCmd[cmd][0].strip())
         return retlist
         
