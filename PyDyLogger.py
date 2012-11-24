@@ -13,10 +13,13 @@ from optparse import OptionParser
 ######################################
 # Serial port settings #
 
-# Linux ##############
+# Linux: Two ways to specify##############
 #myPort = 16 #== COM17 for Windows #~ Note on Windows: use port number - 1 on windows OR:
-# Windows ############
+#myPort = '/dev/ttyACM0'
+
+# Windows: Two ways to specify ############
 myPort = "COM17" # string specification works for windows
+#myPort = 16 # == COM17 for Windows #~ Note on Windows: use port number - 1 on windows OR:
 
 # Baud rate of Dynamixel bus
 myBaud = 1000000
