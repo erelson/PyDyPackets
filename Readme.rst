@@ -6,6 +6,8 @@ The scripts currently can handle the full instructuion set used for talking `to`
 
 Usage
 -----
+The first thing that needs to be done is to set the serial/COM port being used for your setup.  This is set at the top of the ``PyDyLogger.py`` script.  Note that the port specification is OS dependent.  A config file approach to this is forthcoming.
+
 There are four scripts with different purposes, and which use each other to an extent:
 
 :``PyDyPackets.py``: Translation, reference data, packet operations

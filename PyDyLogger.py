@@ -1,13 +1,26 @@
 #! /usr/bin/env python
 
 import threading
-import time
+# import time
 import logging  # prevents different threads' output from mixing
 
 from PyDyPackets import translate_packet
 
 import serial
 from optparse import OptionParser
+
+
+######################################
+# Serial port settings #
+
+# Linux ##############
+#myPort = 16 #== COM17 for Windows #~ Note on Windows: use port number - 1 on windows OR:
+# Windows ############
+myPort = "COM17" # string specification works for windows
+
+# Baud rate of Dynamixel bus
+myBaud = 1000000
+######################################
 
 
 def logger_method(translate=False, save_all=False):
@@ -17,12 +30,6 @@ def logger_method(translate=False, save_all=False):
     save_all - Controls whether malformed packets are saved
     translate - If true, packets are displayed in human readable form
     """
-                
-    # Serial port settings
-    myPort = 16 #=17 #~ note: use port number - 1 on windows OR:
-    # myPort = "COM17" # string specification works for windows
-    myBaud = 1000000
-    
     
     logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',)
@@ -54,7 +61,6 @@ def logger_method(translate=False, save_all=False):
             If true, packets are displayed in human readable form
         """
         
-        byte_string = ""
         byte_list = list()
         byte_packet.word = list()
         
@@ -103,29 +109,16 @@ def logger_method(translate=False, save_all=False):
                     #  to 20 servos...
                     if len(byte_list) > 108: 
                         byte_list = list()
-                        
-                    # byte_string = byte_string + byte
-                    # byte_list.append(int(byte.encode('hex'),16))
-                    # if the end of packet symbol is seen...
-                    # if byte == ')':
-                    # if byte_string[:-2] == str(0xFF)+str(0xFF)):
-                    
-                # if byte != None and byte !="": 
-                    # try:
-                        # print int(byte.encode('hex'),16)
-                    # except ValueError as e:
-                        # print 'error', byte, e
-
     
     # Opening the serial port
     try:
-        ser = serial.Serial(myPort,myBaud) #port number - 1
+        ser = serial.Serial(myPort,myBaud)
         print "Successfully connected to port {0} at {1} baud".format( \
-                myPort+1,myBaud)
+                myPort,myBaud)
         serExist = 1
     
     except serial.SerialException:
-        print "Couldn't open serial port {0}. Try again later.".format(myPort+1)
+        print "Couldn't open serial port {0}. Try again later.".format(myPort)
         serExist = 0
     
     

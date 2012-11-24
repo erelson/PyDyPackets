@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 from optparse import OptionParser
