@@ -14,7 +14,8 @@ from optparse import OptionParser
 # Serial port settings #
 
 # Linux: Two ways to specify##############
-#myPort = 16 #== COM17 for Windows #~ Note on Windows: use port number - 1 on windows OR:
+#myPort = 16
+#myPort = '/dev/ttyS1'
 #myPort = '/dev/ttyACM0'
 
 # Windows: Two ways to specify ############
@@ -115,7 +116,7 @@ def logger_method(translate=False, save_all=False):
     
     # Opening the serial port
     try:
-        ser = serial.Serial(myPort,myBaud)
+        ser = serial.Serial(myPort, myBaud)
         print "Successfully connected to port {0} at {1} baud".format( \
                 myPort,myBaud)
         serExist = 1
