@@ -55,10 +55,10 @@ dictAXCmd = { 0  : ["MODEL_NUMBER_L        ",2],
             17 : ["ALARM_LED             ",1],
             18 : ["ALARM_SHUTDOWN        ",1],
             19 : ["BAD(19)               ",1], #19 (Reserved) # See pg 12/18 of manual
-            20 : ["DOWN_CALIBRATION_L    ",2],
-            21 : ["DOWN_CALIBRATION_H    ",1],
-            22 : ["UP_CALIBRATION_L      ",2],
-            23 : ["UP_CALIBRATION_H      ",1],
+            20 : ["DOWN_CALIBRATION_L    ",2], # Read-only/not used
+            21 : ["DOWN_CALIBRATION_H    ",1], # Read-only/not used
+            22 : ["UP_CALIBRATION_L      ",2], # Read-only/not used
+            23 : ["UP_CALIBRATION_H      ",1], # Read-only/not used
             24 : ["TORQUE_ENABLE         ",1],
             25 : ["LED                   ",1],
             26 : ["CW_COMPLIANCE_MARGIN  ",1],
@@ -99,14 +99,17 @@ def show_instr():
     return
     
     
-def show_cmd():
+def show_cmd(myid=None):
     """ """
     print ""
     print "In command line arguments (-c), enter the number value in column 2"
     print "\nCommand:                  Value:        valid range"
-    for key in dictAXCmd:
+    #TODO
+    #dictCmd = getDict(myid)
+    dictCmd = dictAXCmd
+    for key in dictCmd:
         print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format( \
-                dictAXCmd[key][0],key,dictAXCmd[key][1])
+                dictCmd[key][0], key, dictCmd[key][1])
     
     return
        
@@ -133,28 +136,33 @@ def sum_vals_2(bytes):
     return val
     
     
-def vals_split_and_translate(vals, mycmd):
+def vals_split_and_translate(vals, mycmd, myid=None):
     """Return translated list of single or multiple commands
     
     Receives
     ----------
     vals : list of integers
         ...
-    mycmd : integer of register to start writing bytes at
+    mycmd : integer 
+        Register at which to start reading bytes
     """
+    #TODO
+    #dictCmd = getDict(myid)
+    dictCmd = dictAXCmd
+    
     cnt = 0
     cmdList = list()
     try:
         while cnt < len(vals):
             # handle last byte in vals
             if cnt + 1 == len(vals):
-                cmdList += [dictAXCmd[mycmd+cnt][0], "Val:{0:8}".format( \
+                cmdList += [dictCmd[mycmd+cnt][0], "Val:{0:8}".format( \
                         sum_vals_2(vals[cnt:cnt+1]) ) ]
                 cnt += 1
             else:
-                cmdList += [dictAXCmd[mycmd+cnt][0], "Val:{0:8}".format( \
-                           sum_vals_2(vals[cnt:cnt+dictAXCmd[mycmd+cnt][1]])) ]
-                cnt += dictAXCmd[mycmd+cnt][1]
+                cmdList += [dictCmd[mycmd+cnt][0], "Val:{0:8}".format( \
+                           sum_vals_2(vals[cnt:cnt+dictCmd[mycmd+cnt][1]])) ]
+                cnt += dictCmd[mycmd+cnt][1]
     except KeyError:
         print "Bad packet?:", vals
         raise KeyError
@@ -208,7 +216,8 @@ def translate_packet(byte_packet):
                 
         for subpacket in subpackets:
             # subpacketTranslated = vals_split_and_translate(subpacket,mycmd)
-            subpacketTranslated = vals_split_and_translate(subpacket[1:],mycmd)
+            subpacketTranslated = vals_split_and_translate(subpacket[1:], \
+                    mycmd, subpacket[0])
             ret_list.append( "\n\tID:{0:3}".format(subpacket[0]) )
             ret_list += subpacketTranslated
             
@@ -224,7 +233,8 @@ def translate_packet(byte_packet):
         
     else: # write-data or reg-write packet
         strID = "ID:{0:3}".format(byte_packet[_id])
-        strCmdsVals = vals_split_and_translate(byte_packet[_val:-1], mycmd)
+        strCmdsVals = vals_split_and_translate(byte_packet[_val:-1], mycmd, \
+                    byte_packet[_id])
         
         return [strID, strInst] + strCmdsVals
     
