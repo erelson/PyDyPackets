@@ -1,3 +1,15 @@
+#Project specific:
+Config/*
+!Config/config_example.cfg
+
+# A few custom files that are for testing
+default_out
+filtered_out.txt
+junk.py
+Test.py
+*.*~
+
+
 #################
 ## Eclipse
 #################
@@ -15,15 +27,6 @@ local.properties
 .classpath
 .settings/
 .loadpath
-
-
-
-# A few custom files that are for testing
-default_out
-filtered_out.txt
-junk.py
-Test.py
-*.*~
 
 
 
