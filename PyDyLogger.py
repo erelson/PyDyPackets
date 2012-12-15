@@ -1,33 +1,17 @@
 #! /usr/bin/env python
 
-import PyDyConfig
+from PyDyConfig import port, baud
+from PyDyPackets import translate_packet
 
 import threading
 # import time
 import logging  # prevents different threads' output from mixing
-
-from PyDyPackets import translate_packet
-
 import serial
 from optparse import OptionParser
 
 
 ######################################
-# Serial port settings #
-
-# Linux: Two ways to specify##############
-#myPort = 16
-#myPort = '/dev/ttyS1'
-#myPort = '/dev/ttyACM0'
-
-# Windows: Two ways to specify ############
-myPort = "COM17" # string specification works for windows
-#myPort = 16 # == COM17 for Windows #~ Note on Windows: use port number - 1 on windows OR:
-
-# Baud rate of Dynamixel bus
-myBaud = 1000000
-######################################
-
+# Serial port settings are managed in your 'Config/pydypackets.cfg' file.
 
 def logger_method(translate=False, save_all=False):
     """Method opens serial port and stores received byte packets.
@@ -118,13 +102,13 @@ def logger_method(translate=False, save_all=False):
     
     # Opening the serial port
     try:
-        ser = serial.Serial(myPort, myBaud)
+        ser = serial.Serial(port, baud)
         print "Successfully connected to port {0} at {1} baud".format( \
-                myPort,myBaud)
+                port, baud)
         serExist = 1
     
     except serial.SerialException:
-        print "Couldn't open serial port {0}. Try again later.".format(myPort)
+        print "Couldn't open serial port {0}. Try again later.".format(port)
         serExist = 0
     
     
