@@ -4,6 +4,8 @@
 
 """
 
+import PyDyConfig
+
 from optparse import OptionParser
 
 from PyDyPackets import _id, _cmd, _instr, _len, _synclen, _syncval, \

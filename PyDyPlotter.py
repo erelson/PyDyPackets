@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+import PyDyConfig
+
 import matplotlib.pyplot as plt
 
 from optparse import OptionParser
@@ -7,10 +9,7 @@ from optparse import OptionParser
 import PyDyParser
 from PyDyPackets import _id, _cmd, _instr, _len, _val, sum_vals
 
-
-dict_subplot = { 0: 311, 1: 312, 2: 313 } # 3x1 subplots per plot
-#dict_subplot = { 0: 411, 1: 412, 2: 413, 3: 414 } # 4x1 subplots per plot
-#dict_subplot = { 0: 221, 1: 222, 2: 223, 3: 224 } # 2x2 subplots per plot
+from PyDyConfig import dict_subplot
 
 def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
                     make_plot=True):

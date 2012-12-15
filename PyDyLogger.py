@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+import PyDyConfig
+
 import threading
 # import time
 import logging  # prevents different threads' output from mixing
