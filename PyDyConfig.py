@@ -59,7 +59,7 @@ if config.has_section("plotting"):
 param_guide = [ #section  #parameter #default #boolean?
               [ 'serial', 'port', "17", False],
               [ 'serial', 'baud', "1000000", False],
-              [ 'default_device_type', 'AX-12', False, False]
+              [ 'default_device_type', 'default_device_type', 'AX-12', False]
               # [ '', '' , False, True ],
               # [ '', '' , False, True ],
               # [ '', '', True, True ]
@@ -71,12 +71,12 @@ for param in param_guide:
     try:
         if config.has_section(param[0]):
         # Try to read from pydypackets.cfg
-            param_list.append( config.get('r2s-params', param[1]) )
+            param_list.append( config.get(param[0], param[1]) )
             if param[3]:
                 param_list[-1] = bool(int(param_list[-1]))
     except ConfigParser.NoOptionError:
         # Use default
         param_list.append( param[2])
 
-(port, baud) = param_list
+(port, baud, default_device_type) = param_list
 
