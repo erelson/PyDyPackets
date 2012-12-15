@@ -1,10 +1,9 @@
 #! /usr/bin/env python
 
-import PyDyConfig
+from PyDyConfig import id_dict, default_device_type
+from PyDyDevices import device_dict
 
 from optparse import OptionParser
-
-from PyDyDevices import *
 
 # Global indices for getting bytes from packets;
 # I'm doing this so I can easily toss the FF FF leading bytes if desired...
@@ -52,9 +51,9 @@ def show_instr():
     
 def show_cmd(myid=None):
     """ """
-    dictCmd = device_dict[PyDyConfig.default_device_type]
+    dictCmd = device_dict[default_device_type]
     print "\nPrinting the command set for default device ({0}):".format( \
-            PyDyConfig.default_device_type)
+            default_device_type)
     
     print ""
     print "In command line arguments (-c), enter the number value in column 2"
@@ -99,9 +98,7 @@ def vals_split_and_translate(vals, mycmd, myid=None):
     mycmd : integer 
         Register at which to start reading bytes
     """
-    #TODO
-    #dictCmd = getDict(myid)
-    dictCmd = dictAXCmd
+    dictCmd = device_dict[id_dict[myid]]
     
     cnt = 0
     cmdList = list()
@@ -181,7 +178,8 @@ def translate_packet(byte_packet):
         retlist = [strID, strInst]
         for cmd in xrange(byte_packet[_readcmd], byte_packet[_readcmd] + \
                 byte_packet[_readlen]):
-            retlist.append(dictAXCmd[cmd][0].strip())
+            retlist.append( \
+                    device_dict[id_dict[byte_packet[_id]]][cmd][0].strip() )
         return retlist
         
     else: # write-data or reg-write packet
