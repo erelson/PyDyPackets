@@ -57,6 +57,11 @@ for param in param_guide:
 
 (port, baud, default_device_type) = param_list
 
+try:
+    port = int(port)
+except ValueError:
+    pass # Non-numeric port specification
+
 #######################################
 # Create device ID to device type dictionary
 if config.has_section("id_to_device_type"):
@@ -72,6 +77,11 @@ else:
     
 id_dict["default_device_type"] = default_device_type
 id_dict[None] = default_device_type
+# We fill out the list of non-defined IDs with the default
+#  (This avoids needing try-except everty time id_dict is used)
+for i in xrange(0,255):
+    if i not in id_dict.keys():
+        id_dict[i] = default_device_type
 
 #######################################
 # Create device ID to device type dictionary

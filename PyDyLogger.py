@@ -107,8 +107,9 @@ def logger_method(translate=False, save_all=False):
                 port, baud)
         serExist = 1
     
-    except serial.SerialException:
+    except serial.SerialException as e:
         print "Couldn't open serial port {0}. Try again later.".format(port)
+        print e
         serExist = 0
     
     
