@@ -1,7 +1,8 @@
-###WORK IN PROGRESS
+#
 
 import ConfigParser
 from sys import exit
+
 
 config = ConfigParser.ConfigParser()
 
@@ -18,35 +19,11 @@ if status == []:
     
 
 #######################################
-# Read in other bot profile(s) (overwrite the initial configs that both
-#  files define;)
+# Read in other bot profile(s) (overwrites any configs that both
+#  files define)
 if config.has_section("bots"):
     for profile in config.items("bots"):
         config.read(profile[1]) # UNTESTED
-
-#######################################
-# Create device ID to device type dictionary
-if config.has_section("id_to_device_type"):
-    id_dict = dict([ (int(x[0]), x[1]) for x in \
-            config.items("id_to_device_type")])
-else:
-    id_dict = dict([ ("default_device_type", "AX-12") ])
-
-#######################################
-# Create device ID to device type dictionary
-if config.has_section("limits"):
-    #id_dict = dict([ (int(x[0]), x[1]) for x in \
-    #        config.items("id_to_device_type")])
-    pass
-else:
-    pass
-    #id_dict = dict([ ("default_device_type", "AX-12") ])
-
-#######################################
-# Get plotting layout information
-if config.has_section("plotting"):
-    dict_subplot = dict([ (int(x[0]), int(x[1])) for x in \
-            config.items("plotting")])
     
 #######################################
 # Grab single value parameters
@@ -79,4 +56,36 @@ for param in param_guide:
         param_list.append( param[2])
 
 (port, baud, default_device_type) = param_list
+
+#######################################
+# Create device ID to device type dictionary
+if config.has_section("id_to_device_type"):
+    try:
+        id_dict = dict([ (int(x[0]), x[1]) for x in \
+                config.items("id_to_device_type")])
+    except ValueError:
+        print "\nERROR: IDs in section [id_to_device_type] of " \
+                "'Config/pydypackets.cfg' must be integers."
+        exit()
+else:
+    id_dict = dict()
+    
+id_dict["default_device_type"] = default_device_type
+id_dict[None] = default_device_type
+
+#######################################
+# Create device ID to device type dictionary
+if config.has_section("limits"):
+    #id_dict = dict([ (int(x[0]), x[1]) for x in \
+    #        config.items("id_to_device_type")])
+    pass
+else:
+    pass
+    #id_dict = dict([ ("default_device_type", "AX-12") ])
+
+#######################################
+# Get plotting layout information
+if config.has_section("plotting"):
+    dict_subplot = dict([ (int(x[0]), int(x[1])) for x in \
+            config.items("plotting")])
 
