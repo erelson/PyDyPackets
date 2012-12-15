@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
-import PyDyConfig
+from PyDyConfig import id_dict
+from PyDyDevices import device_dict
 
 import matplotlib.pyplot as plt
 
@@ -75,7 +76,7 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
         
         plt.subplot(subplot_dict[cnt])
         plt.plot(plotting_dict[key])
-        plt.title("Servo: {0}".format(key))
+        plt.title("{1} ID: {0}".format(key, id_dict[key]))
         
         cnt += 1
         
