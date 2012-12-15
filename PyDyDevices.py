@@ -140,3 +140,18 @@ dictAXS1Cmd = { 0  : ["MODEL_NUMBER_L        ",2],
             }
     
         
+# Device lookup dictionary
+device_dict = {
+        "AX-12"  : dictAXCmd,
+        "AX-12W" : dictAX12WCmd,
+        "AX-18"  : dictAX18Cmd,
+        "AX-S1"  : dictAXS1Cmd,
+        "RX-24"  : dictRX24Cmd,
+        "RX-28"  : dictRX28Cmd,
+        "RX-64"  : dictRX64Cmd,
+        "MX-28"  : dictMX28Cmd,
+        "MX-64"  : dictMX64Cmd,
+        "MX-106" : dictMX106Cmd,
+        "EX-106" : dictEX106Cmd
+        }
+        

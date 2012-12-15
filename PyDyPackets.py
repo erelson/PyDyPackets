@@ -52,15 +52,17 @@ def show_instr():
     
 def show_cmd(myid=None):
     """ """
+    dictCmd = device_dict[PyDyConfig.default_device_type]
+    print "\nPrinting the command set for default device ({0}):".format( \
+            PyDyConfig.default_device_type)
+    
     print ""
     print "In command line arguments (-c), enter the number value in column 2"
     print "\nCommand:                  Value:        valid range"
-    #TODO
-    #dictCmd = getDict(myid)
-    dictCmd = dictAXCmd
     for key in dictCmd:
-        print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format( \
-                dictCmd[key][0], key, dictCmd[key][1])
+        if dictCmd[key][0][:3] != "BAD": # Suppress BAD entries
+            print "  {0:24}0x{1:<4X}{1:<4}{2:>8}".format( \
+                    dictCmd[key][0], key, dictCmd[key][1])
     
     return
        
@@ -217,7 +219,7 @@ def main():
         show_cmd()
         return
         
-    print "PyDyPackets.py is a utility script, not meant to be called by the " \
+    print "PyDyPackets.py is a utility script, meant to be called by the " \
             "user.  See 'Readme.rst' for a usage guide."
     return
 
