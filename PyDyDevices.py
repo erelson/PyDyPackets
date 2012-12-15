@@ -1,3 +1,4 @@
+#
             
 #          #cmd   # name                  #length of value
 dictAXCmd = { 0  : ["MODEL_NUMBER_L        ",2],
