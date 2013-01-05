@@ -3,7 +3,7 @@ Config/*
 !Config/config_example.cfg
 
 # A few custom files that are for testing
-default_out
+logging_output.txt
 filtered_out.txt
 junk.py
 Test.py

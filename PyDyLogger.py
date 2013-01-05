@@ -14,12 +14,12 @@ from optparse import OptionParser
 ######################################
 # Serial port settings are managed in your 'Config/pydypackets.cfg' file.
 
-def logger_method(translate=False, save_all=False):
+def logger_method(translate=False, saveall=False, outputfile="logging_output.txt"):
     """Method opens serial port and stores received byte packets.
     
     Receives
     ----------
-    save_all - Controls whether malformed packets are saved
+    saveall - Controls whether malformed packets are saved
     translate - If true, packets are displayed in human readable form
     """
     
@@ -40,7 +40,7 @@ def logger_method(translate=False, save_all=False):
             self.time = 0.0
                 
     
-    def COMThread(byte_packet, save_all=False, translate=False):
+    def COMThread(byte_packet, saveall=False, translate=False):
         """Method monitors serial port and sends packets to output
         
         Method is intended to be run in a threading.thread.
@@ -50,7 +50,7 @@ def logger_method(translate=False, save_all=False):
         byte_packet : BytePacket object
             a BytePacket object allowing external thread access to the current 
             packet
-        save_all : boolean
+        saveall : boolean
             Controls whether malformed packets are saved
         translate : boolean
             If true, packets are displayed in human readable form
@@ -84,7 +84,7 @@ def logger_method(translate=False, save_all=False):
                         
                         # Save packet
                         # Note: saved packets have FF FF prepended to them
-                        if save_all:
+                        if saveall:
                             byte_packet.word = [0xff,0xff] + byte_list[:-2]
                         elif checksumOK:
                             byte_packet.word = [0xff,0xff] + byte_list[:-2]
@@ -132,13 +132,12 @@ def logger_method(translate=False, save_all=False):
     
     # Create serial port monitoring thread
     thread = threading.Thread(target=COMThread, args=(mybyte_packet,), \
-            kwargs={'translate': translate, 'save_all': save_all})
+            kwargs={'translate': translate, 'saveall': saveall})
     # thread = threading.Thread(target=COMThread, args=(mybyte_packet,))
     # thread = threading.Thread(target=COMThread, kwargs={'byte_packet': mybyte_packet})
     thread.daemon = True # Thread is killed when main thread ends.
     thread.start()
     
-    outputfile = "default_out"
     with open(outputfile,'w') as fw:
         try:
             if timing: # use timing to differentiate new packets
@@ -180,13 +179,17 @@ def main():
             dest="translate",default=False,help="Print human readable " \
             "packets. Default: %default")
     parser.add_option('-a','--all',action="store_true", \
-            dest="save_all",default=False,help="Optionally save all bytes/" \
+            dest="saveall",default=False,help="Optionally save all bytes/" \
             "packets, including malformed packets. Default: %default")
+    parser.add_option('-o','--output',action="store", \
+            dest="output",default="logging_output.txt",help="Specify output " \
+            "file for log of packets. Default: %default")
     #
     
     (options, args) = parser.parse_args()
     
-    logger_method(translate=options.translate, save_all=options.save_all)
+    logger_method(translate=options.translate, saveall=options.saveall, \
+            outputfile=options.output)
     
     
     return
