@@ -37,7 +37,7 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
         def __init__(self, start=0):
             self.lock = threading.Lock()
             self.word = []
-            self.time = 0.0
+            self.timestamp = 0.0
                 
     
     def COMThread(byte_packet, saveall=False, translate=False):
@@ -102,7 +102,7 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
                                     
                         # Get packet time
                         if timing:
-                            byte_packet.time = time.time() - startTime
+                            byte_packet.timestamp = time.time() - startTime
                         
                         byte_list = list()
                         
@@ -141,14 +141,14 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
     with open(outputfile,'w') as fw:
         try:
             if timing: # use timing to differentiate new packets
-                myoldtime = 0.0
+                myoldtimestamp = 0.0
                 while True:
-                    if mybyte_packet.time != myoldtime:
-                        myoldtime = mybyte_packet.time
+                    if mybyte_packet.timestamp != myoldtimestamp:
+                        myoldtimestamp = mybyte_packet.timestamp
                         
-                        # Record packet time
+                        # Record packet timestamp
                         if timing:
-                            fw.write("{0:.3f} ".format(mybyte_packet.time) + " ")
+                            fw.write("{0:.3f} ".format(mybyte_packet.timestamp) + " ")
                         
                         fw.write(" ".join([str(x) for x in mybyte_packet.word]) + "\n")
                     
@@ -190,7 +190,6 @@ def main():
     
     logger_method(translate=options.translate, saveall=options.saveall, \
             outputfile=options.output)
-    
     
     return
 
