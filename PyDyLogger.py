@@ -1,12 +1,13 @@
 #! /usr/bin/env python
 
-from PyDyConfig import port, baud
+from PyDyConfig import port, baud, timing
 from PyDyPackets import translate_packet
 
 import threading
 # import time
 import logging  # prevents different threads' output from mixing
 import serial
+import time
 from optparse import OptionParser
 
 
@@ -16,13 +17,16 @@ from optparse import OptionParser
 def logger_method(translate=False, save_all=False):
     """Method opens serial port and stores received byte packets.
     
-    Receives:
+    Receives
+    ----------
     save_all - Controls whether malformed packets are saved
     translate - If true, packets are displayed in human readable form
     """
     
     logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',)
+                    
+    if timing: startTime = time.time()
                         
     class BytePacket(object):
         """Class for passing byte packet between threads
@@ -33,6 +37,7 @@ def logger_method(translate=False, save_all=False):
         def __init__(self, start=0):
             self.lock = threading.Lock()
             self.word = []
+            self.time = 0.0
                 
     
     def COMThread(byte_packet, save_all=False, translate=False):
@@ -43,8 +48,8 @@ def logger_method(translate=False, save_all=False):
         Receives
         ----------
         byte_packet : BytePacket object
-            a BytePacket object allowing external access to the
-            current packet
+            a BytePacket object allowing external thread access to the current 
+            packet
         save_all : boolean
             Controls whether malformed packets are saved
         translate : boolean
@@ -71,7 +76,7 @@ def logger_method(translate=False, save_all=False):
                             logging.debug(( 'error', byte, e,))
                     
                     # Identify and vet packets; 
-                    # We use FF FF to indicate *end* of packet...
+                    # We use FF FF to identify *end* of packet.
                     if byte_list[-2:] == [0xff,0xff]:
                         
                         checksumOK = byte_list[-3] == \
@@ -91,14 +96,21 @@ def logger_method(translate=False, save_all=False):
                                     " ".join(["{0:<3}".format(x) \
                                     for x in byte_packet.word]) + \
                                     "  packet ok?: " + str(checksumOK )))
-                                
+                                    
+                        # Get packet time
+                        if timing:
+                            byte_packet.time = time.time() - startTime
+                        
                         byte_list = list()
                         
-                    # threshold to keep byte_list at a reasonable size.
+                    # Threshold to keep byte_list at a reasonable size.
                     # 108 chosen as 4 + 4 + 20 * 5, e.g. sending speed/position
                     #  to 20 servos...
                     if len(byte_list) > 108: 
                         byte_list = list()
+    
+    
+    # Main thread:
     
     # Opening the serial port
     try:
@@ -114,21 +126,26 @@ def logger_method(translate=False, save_all=False):
     
     
     myoldbytelist = None
-    mybyte_list = BytePacket()
+    mybyte_packet = BytePacket()
     
-    thread = threading.Thread(target=COMThread, args=(mybyte_list,), \
+    # Create serial port monitoring thread
+    thread = threading.Thread(target=COMThread, args=(mybyte_packet,), \
             kwargs={'translate': translate, 'save_all': save_all})
-    # thread = threading.Thread(target=COMThread, args=(mybyte_list,))
-    # thread = threading.Thread(target=COMThread, kwargs={'byte_packet': mybyte_list})
+    # thread = threading.Thread(target=COMThread, args=(mybyte_packet,))
+    # thread = threading.Thread(target=COMThread, kwargs={'byte_packet': mybyte_packet})
     thread.daemon = True # Thread is killed when main thread ends.
     thread.start()
     
-    outputfile="default_out"
+    outputfile = "default_out"
     with open(outputfile,'w') as fw:
         try:
             while True:
-                if mybyte_list.word != myoldbytelist:
-                    myoldbytelist = mybyte_list.word
+                if mybyte_packet.word != myoldbytelist:
+                    myoldbytelist = mybyte_packet.word
+                    
+                    # Record packet time
+                    if timing:
+                        fw.write("{0:.3f} ".format(mybyte_packet.time) + " ")
                     
                     fw.write(" ".join([str(x) for x in myoldbytelist]) + "\n")
                     
