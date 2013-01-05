@@ -32,30 +32,29 @@ if config.has_section("bots"):
 #  (1) section containing parameter in pydypackets.cfg
 #  (2) parameter names as listed in pydypackets.cfg
 #  (3) their defaults
-#  (4) whether these variables need to be converted to a boolean
-param_guide = [ #section  #parameter #default #boolean?
-              [ 'serial', 'port', "17", False],
-              [ 'serial', 'baud', "1000000", False],
-              [ 'default_device_type', 'default_device_type', 'AX-12', False]
-              # [ '', '' , False, True ],
-              # [ '', '' , False, True ],
+#  (4) which 'get' function to use for the parameter
+param_guide = [ #sectionname #parametername #defaultvalue #getfunction
+              [ 'serial', 'port', "17", config.get],
+              [ 'serial', 'baud', "1000000", config.get],
+              [ 'default_device_type', 'default_device_type', 'AX-12', config.get],
+              [ 'timing', 'timing' , False, config.getboolean ],
+              [ 'translation', 'timestamp' , False, config.getboolean]
               # [ '', '', True, True ]
               ]
-
+    
 param_list = list()
 
 for param in param_guide:
     try:
         if config.has_section(param[0]):
         # Try to read from pydypackets.cfg
-            param_list.append( config.get(param[0], param[1]) )
-            if param[3]:
-                param_list[-1] = bool(int(param_list[-1]))
+            # Note that param[3] is a function
+            param_list.append( param[3](param[0], param[1]) )
     except ConfigParser.NoOptionError:
         # Use default
         param_list.append( param[2])
 
-(port, baud, default_device_type) = param_list
+(port, baud, default_device_type, timing, include_timestamp_in_translate, ) = param_list
 
 try:
     port = int(port)
@@ -98,14 +97,3 @@ else:
 if config.has_section("plotting"):
     dict_subplot = dict([ (int(x[0]), int(x[1])) for x in \
             config.items("plotting")])
-
-#######################################
-# Get time recording information
-if config.has_section("timing"):
-    timing = config.getboolean("timing", "timing")
-    
-#######################################
-# Get translation output style configuration
-if config.has_section("translation"):
-    include_timestamp_in_translate = config.getboolean("translation", "timestamp")
-    
