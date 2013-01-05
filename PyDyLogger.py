@@ -125,7 +125,6 @@ def logger_method(translate=False, save_all=False):
         serExist = 0
     
     
-    myoldbytelist = None
     mybyte_packet = BytePacket()
     
     # Create serial port monitoring thread
@@ -139,15 +138,25 @@ def logger_method(translate=False, save_all=False):
     outputfile = "default_out"
     with open(outputfile,'w') as fw:
         try:
-            while True:
-                if mybyte_packet.word != myoldbytelist:
-                    myoldbytelist = mybyte_packet.word
+            if timing: # use timing to differentiate new packets
+                myoldtime = 0.0
+                while True:
+                    if mybyte_packet.time != myoldtime:
+                        myoldtime = mybyte_packet.time
+                        
+                        # Record packet time
+                        if timing:
+                            fw.write("{0:.3f} ".format(mybyte_packet.time) + " ")
+                        
+                        fw.write(" ".join([str(x) for x in mybyte_packet.word]) + "\n")
                     
-                    # Record packet time
-                    if timing:
-                        fw.write("{0:.3f} ".format(mybyte_packet.time) + " ")
-                    
-                    fw.write(" ".join([str(x) for x in myoldbytelist]) + "\n")
+            else: # packets are differentiated by their contents
+                myoldbytelist = None
+                while True:
+                    if mybyte_packet.word != myoldbytelist:
+                        myoldbytelist = mybyte_packet.word
+                        
+                        fw.write(" ".join([str(x) for x in mybyte_packet.word]) + "\n")
                     
         except KeyboardInterrupt:
             print "KeyboardInterrupt caught! Closing {0}...".format(outputfile)
