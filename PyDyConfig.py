@@ -104,3 +104,8 @@ if config.has_section("plotting"):
 if config.has_section("timing"):
     timing = config.getboolean("timing", "timing")
     
+#######################################
+# Get translation output style configuration
+if config.has_section("translation"):
+    include_timestamp_in_translate = config.getboolean("translation", "timestamp")
+    
