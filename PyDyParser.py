@@ -265,7 +265,7 @@ def main():
                 
     # Optionally tally packets and report        
     if options.my_tally_by != None:
-        tally_packets(myfiltered, tally_by=options.my_tally_by,test=3)
+        tally_packets(myfiltered, tally_by=options.my_tally_by)
             
     return
     
