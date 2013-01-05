@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 from PyDyConfig import id_dict, default_device_type
+from PyDyConfig import include_timestamp_in_translate as itit
 from PyDyDevices import device_dict
 
 from optparse import OptionParser
@@ -120,14 +121,18 @@ def vals_split_and_translate(vals, mycmd, myid=None):
     return cmdList
     
     
-def translate_packet(byte_packet):
-    """Method returns partially human readable translations of bytes in a packet
+def translate_packet(byte_packet, includetime=itit):
+    """Method returns structured human readable translation of bytes in a packet
     The goal of this method is not well quantified yet...
     
     Receives
     ----------
     byte_packet : a list of integers
-        Packets include 0xff 0xff and checksum.
+        Packets include 0xff 0xff and checksum.  If a time stamp is present, the
+        first entry in the list is a float.
+    includetime : boolean
+        If true, packet time stamps will be converted to a string as well.  If
+        false, the packet time stamps are ignored.
     
     Returns
     ----------
@@ -142,10 +147,15 @@ def translate_packet(byte_packet):
             ....]
     """
     
+    timestamp = []
+    if byte_packet[0] != 255:
+        if includetime: timestamp = ["Timestamp: {0:8}".format(byte_packet[0])]
+        byte_packet = byte_packet[1:]
+    
     if len(byte_packet) < _cmd: 
         return ("bad packet; too short. expected: {0}; received: {1}".format( \
                 _cmd, len(byte_packet)),)
-                
+    
     try:
         strInst = dictInstr[ byte_packet[_instr] ][0]
     except KeyError:
@@ -158,7 +168,7 @@ def translate_packet(byte_packet):
     mycmd = byte_packet[_cmd]
     
     if byte_packet[_instr] == 0x83: # sync-write packet
-        ret_list = ["Sync-write", ]
+        retlist = ["Sync-write", ] + timestamp
         # iterate from first value byte, to byte before last byte (checksum),
         #  and iterate by length+1 bytes (ID + values) at a time
         subpackets = [ byte_packet[x:x+1+byte_packet[_synclen]] for x in \
@@ -168,26 +178,26 @@ def translate_packet(byte_packet):
             # subpacketTranslated = vals_split_and_translate(subpacket,mycmd)
             subpacketTranslated = vals_split_and_translate(subpacket[1:], \
                     mycmd, subpacket[0])
-            ret_list.append( "\n\tID:{0:3}".format(subpacket[0]) )
-            ret_list += subpacketTranslated
+            retlist.append( "\n\tID:{0:3}".format(subpacket[0]) )
+            retlist += subpacketTranslated
             
-        return ret_list
+        return retlist
         
     elif byte_packet[_instr] == 0x02: # read-data packet
         strID = "ID:{0:3}".format(byte_packet[_id])
         retlist = [strID, strInst]
-        for cmd in xrange(byte_packet[_readcmd], byte_packet[_readcmd] + \
-                byte_packet[_readlen]):
+        for cmd in xrange(byte_packet[_readcmd], 
+                byte_packet[_readcmd] + byte_packet[_readlen]):
             retlist.append( \
                     device_dict[id_dict[byte_packet[_id]]][cmd][0].strip() )
-        return retlist
+        return retlist + timestamp
         
     else: # write-data or reg-write packet
         strID = "ID:{0:3}".format(byte_packet[_id])
         strCmdsVals = vals_split_and_translate(byte_packet[_val:-1], mycmd, \
                     byte_packet[_id])
         
-        return [strID, strInst] + strCmdsVals
+        return [strID, strInst] + strCmdsVals + timestamp
     
     
 def main():
