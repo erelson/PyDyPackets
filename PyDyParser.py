@@ -4,7 +4,7 @@
 
 """
 
-import PyDyConfig
+from PyDyConfig import include_timestamp_in_translate as itit
 
 from optparse import OptionParser
 
@@ -26,6 +26,10 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
         Instruction values to keep
     f_cmd : list/tuple of integers 
         Command values (start addresses) to keep
+    sync_split : boolean
+        If true, convert sync-write packets into artificial individual packets.
+        Packet time-stamp of the sync-write packet is applied to each
+        sub-packet.
     
     Returns
     ----------
@@ -42,6 +46,11 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
         packet = line.split()
         if packet == []: continue
         
+        if packet[0] != "255":
+            time = [float(packet[0])]
+            packet = packet[1:]
+        else: time = []
+            
         packet = [int(x) for x in packet]
         
         # check packet contents against the filters
@@ -52,9 +61,9 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
             if sync_split and packet[_instr] == 0x83:
                 for subpacket in make_packets_from_sync_write_packet(packet):
                     if (f_id == None or subpacket[_id] in f_id):
-                        filtered.append(subpacket)
+                        filtered.append(time + subpacket)
             else:
-                filtered.append(packet)
+                filtered.append(time + packet)
     
     return filtered
 
@@ -64,7 +73,8 @@ def make_packets_from_sync_write_packet():
     """
     pass
     return
-    
+
+
 def tally_packets(packet_list, tally_by='cmd', **kwargs):
     """Method reports the # of packets of each type
     
@@ -73,17 +83,15 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     Receives
     ----------
     packet_list : list of lists of integers
-        A list of packets; each packet is a list of integers
+        A list of packets; each packet is a list of integers.
         Alternately, packet_list will be read from a file if the file kwarg is
         passed.
     tally_by : string
         Which byte to tally packets by.
         Valid values for tally_by are 'cmd', 'instr', 'id', 'len'.
-    
-    kwargs that are recognized
-    ----------
-    file : string
-        file of packets to read in
+    kwargs : optional
+        file : string
+            file of packets to read in
     """
     
     dict_tally_by = {     'cmd'   : _cmd, 
@@ -211,6 +219,9 @@ def main():
     parser.add_option('-t','--translate',action="store_true", \
             dest="translate",default=False,help="Write filtered packets in " \
             "human-readable form. Default: %default")
+    parser.add_option('--time',action="store_true", \
+            dest="timestamp",default=itit,help="Appends timestamps to end of " \
+            "each translated packet (if timestamps exist). Default: %default")
     parser.add_option('-T','--Tally',action="store", \
             dest="my_tally_by",default=None,help="Tally filtered packets by " \
             "command (cmd), instruction (instr) or servo ID (id).  E.g.: " \
@@ -242,9 +253,10 @@ def main():
             with open(options.output, 'w') as fw:
                 if options.translate: # translated output
                     for packet in myfiltered:
-                        packet = translate_packet(packet)
+                        packet = translate_packet(packet, \
+                                includetime=options.timestamp)
                         fw.write("\t".join(packet) + "\n")
-                else: # raw integer output
+                else: # raw integer output; float timestamp included if exists
                     for packet in myfiltered:
                         fw.write(" ".join([str(x) for x in packet]) + "\n")
             print "Filtered results written to {0}\n".format(options.output)
