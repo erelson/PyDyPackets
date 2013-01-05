@@ -8,7 +8,6 @@ AX-12, AX-12W, AX-18, AX-S1, RX-24, RX-28, RX-64, MX-28, MX-64, MX-106, EX-106
 
 The Scripts
 -------------
-
 There are six scripts with different purposes, and which use each other to various extents.  These are divided into two groups; those that the user interacts with, and those that are used internally.
 
 User-friendly:
@@ -41,6 +40,14 @@ Or:
 
 1) Connect computer to a Dynamixel bus, and save bytes using ``PyDyLogger.py``
 2) Feed the output file into ``PyDyPlotter.py`` with various flags and diagnose problems via plots
+
+Requirements
+----------------
+Python (2.6+?) should be installed.  
+
+Plotting capabilities use MatPlotLib.
+
+http://matplotlib.org/
 
 Origin/Purpose
 ----------------
