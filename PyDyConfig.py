@@ -99,3 +99,8 @@ if config.has_section("plotting"):
     dict_subplot = dict([ (int(x[0]), int(x[1])) for x in \
             config.items("plotting")])
 
+#######################################
+# Get time recording information
+if config.has_section("timing"):
+    timing = config.getboolean("timing", "timing")
+    
