@@ -39,7 +39,7 @@ param_guide = [ #sectionname #parametername #defaultvalue #getfunction
               [ 'default_device_type', 'default_device_type', 'AX-12', config.get],
               [ 'timing', 'timing' , False, config.getboolean ],
               [ 'translation', 'timestamp' , False, config.getboolean]
-              # [ '', '', True, True ]
+              # [ '', '', True, config.get]
               ]
     
 param_list = list()
