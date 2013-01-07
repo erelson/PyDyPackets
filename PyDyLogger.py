@@ -19,8 +19,10 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
     
     Receives
     ----------
-    saveall - Controls whether malformed packets are saved
-    translate - If true, packets are displayed in human readable form
+    saveall : boolean
+        Controls whether malformed packets are saved
+    translate : boolean
+        If true, packets are displayed in human readable form
     """
     
     logging.basicConfig(level=logging.DEBUG,
@@ -48,7 +50,7 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
         Receives
         ----------
         byte_packet : BytePacket object
-            a BytePacket object allowing external thread access to the current 
+            A BytePacket object allowing external thread access to the current 
             packet
         saveall : boolean
             Controls whether malformed packets are saved

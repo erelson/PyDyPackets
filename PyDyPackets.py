@@ -95,9 +95,14 @@ def vals_split_and_translate(vals, mycmd, myid=None):
     Receives
     ----------
     vals : list of integers
-        ...
+        List of value bytes in the packet
     mycmd : integer 
         Register at which to start reading bytes
+    
+    Returns
+    ----------
+    cmdList : list of strings
+        List of commands and values
     """
     dictCmd = device_dict[id_dict[myid]]
     
@@ -140,7 +145,8 @@ def translate_packet(byte_packet, includetime=itit):
         If using a simple packet structure, generally of the form:
             [strID, strInst, strCmd1, strVal1, strCmd2, strVal2, ...]
         Else if using sync-write packets, a list for each servo, and each list
-        starts with a newline and tab:
+        starts with a newline and tab::
+        
             ['Sync-write',
             ['\n\t'+strID1, strCmd1, strVal1, strCmd2, strVal2, ...],
             ['\n\t'+strID2, strCmd1, strVal1, strCmd2, strVal2, ...],

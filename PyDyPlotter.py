@@ -41,7 +41,8 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
     
     Returns
     ----------
-    plotting_dict : the dictionary storing the lists that would be plotted
+    plotting_dict : dictionary
+        the dictionary storing the lists that would be plotted
     """
     
     # get list of packets, each packet is a list of integers
