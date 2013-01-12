@@ -17,7 +17,7 @@ from optparse import OptionParser
 def logger_method(translate=False, saveall=False, outputfile="logging_output.txt"):
     """Method opens serial port and stores received byte packets.
     
-    Receives
+    Parameters
     ----------
     saveall : boolean
         Controls whether malformed packets are saved

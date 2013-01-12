@@ -16,7 +16,7 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
                     make_plot=True):
     """A file stream of packets is filtered and plotted
     
-    Receives
+    Parameters
     ----------
     fr : file stream
         e.g. via ``open('file', 'r')``

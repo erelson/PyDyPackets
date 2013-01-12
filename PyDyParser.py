@@ -16,7 +16,7 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
             sync_split=False):
     """Returns a filtered list of byte packets from a file stream
     
-    Receives
+    Parameters
     ----------
     stream : a file stream, e.g. via open('file', 'r')
     (**optional**)
@@ -68,8 +68,12 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
     return filtered
 
     
-def make_packets_from_sync_write_packet():
-    """
+def make_packets_from_sync_write_packet(packet):
+    """Method receives a stream of sync-write bytes, with the length of each
+    subpacket
+    
+    Parameters
+    ----------
     """
     pass
     return
@@ -80,7 +84,7 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     
     Type depends on the value passed to the tally_by argument
     
-    Receives
+    Parameters
     ----------
     packet_list : list of lists of integers
         A list of packets; each packet is a list of integers.
@@ -138,7 +142,7 @@ def _is_list(f_thing):
     """Try various ways to assure that we have a list. 
     This is just for the heck of it... excessive flexibility...
     
-    Receives
+    Parameters
     ---------
     f_thing : string or list
     
@@ -175,7 +179,7 @@ def tally(list):
     Method adapted from:
     http://bigbadcode.com/2007/04/04/count-the-duplicates-in-a-python-list/
     
-    Receives
+    Parameters
     ----------
     list : list of anything
     
