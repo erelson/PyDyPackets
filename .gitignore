@@ -2,6 +2,8 @@
 Config/*
 !Config/config_example.cfg
 
+doc/_build
+
 # A few custom files that are for testing
 logging_output.txt
 filtered_out.txt
