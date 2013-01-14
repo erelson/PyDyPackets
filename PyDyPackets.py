@@ -69,10 +69,19 @@ def show_cmd(myid=None):
 
 def sum_vals(byte_packet):
     """Sum value bytes by shifting the higher bytes as needed
+    
+    Parameters
+    -----------
+    byte_packet : list of integers
+        List of bytes in a packet, including FF FF.
+        
+    Returns
+    -------
+    val : integer
+        Sum of low and high bytes,
     """
     val = 0
-    # (byte_packet[_len] - 2 - 1) #length seems to be larger than it should be
-    for i in xrange(byte_packet[_len] - 2 -1 ):
+    for i in xrange(byte_packet[_len] - 3):
         val += byte_packet[_val+i]<<(8*i)
         
     return val
@@ -82,7 +91,6 @@ def sum_vals_2(bytes):
     """Sum value bytes by shifting the higher bytes as needed
     """
     val = 0
-    # (byte_packet[_len] - 2 - 1) #length seems to be larger than it should be
     for i in xrange(len(bytes)):
         val += bytes[i]<<(8*i)
         
@@ -92,12 +100,14 @@ def sum_vals_2(bytes):
 def vals_split_and_translate(vals, mycmd, myid=None):
     """Return translated list of single or multiple commands
     
-    Receives
+    Parameters
     ----------
     vals : list of integers
         List of value bytes in the packet
     mycmd : integer 
         Register at which to start reading bytes
+    myid : integer, optional
+        ID of servo for values being translated.
     
     Returns
     ----------
@@ -115,6 +125,7 @@ def vals_split_and_translate(vals, mycmd, myid=None):
                 cmdList += [dictCmd[mycmd+cnt][0], "Val:{0:8}".format( \
                         sum_vals_2(vals[cnt:cnt+1]) ) ]
                 cnt += 1
+            # handles single or pairs of value bytes (i.e. low + high bytes)
             else:
                 cmdList += [dictCmd[mycmd+cnt][0], "Val:{0:8}".format( \
                            sum_vals_2(vals[cnt:cnt+dictCmd[mycmd+cnt][1]])) ]
@@ -130,7 +141,7 @@ def translate_packet(byte_packet, includetime=itit):
     """Method returns structured human readable translation of bytes in a packet
     The goal of this method is not well quantified yet...
     
-    Receives
+    Parameters
     ----------
     byte_packet : a list of integers
         Packets include 0xff 0xff and checksum.  If a time stamp is present, the

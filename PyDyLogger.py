@@ -47,7 +47,7 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
         
         Method is intended to be run in a threading.thread.
         
-        Receives
+        Parameters
         ----------
         byte_packet : BytePacket object
             A BytePacket object allowing external thread access to the current 
