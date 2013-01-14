@@ -74,9 +74,41 @@ def make_packets_from_sync_write_packet(packet):
     
     Parameters
     ----------
+    packet : list of integers
+        List of bytes in a packet, including FF FF.
+        Do not include timestamp.
+        
+    Returns
+    -------
+    packet_list : list of lists of integers
+        Byte packets
+        
+    Notes
+    ------
+    Sync write packets are...
+    
+    See Also
+    --------
+    Pgs. 19 & 23 of AX-12 manual.
     """
-    pass
-    return
+    sublength = packet[_synclen]
+    numsubpackets = (packet[_len] - 4) / (sublength + 1)
+    command = packet[_cmd]
+    packet_list = []
+    # Sync packet format:
+    # FF FF FE length 83 cmd sublength ID1 vals[1,sublen] ID2 vals ... checksum
+    subpackets = [ packet[x:x + sublength + 1] \
+            for x in range(_syncval, packet[_len], sublength + 1) ]
+                
+    # Build new packets
+    for subpacket in subpackets:
+        # FF FF ID sublength+3 03 cmd vals[1,sublength] checksum
+        newpacket = [0xFF, 0xFF, subpacket[0], sublength+3, 0x03, command] + \
+                subpacket[1:]
+        checksum = 255 - (sum(newpacket[2:]) % 256)
+        packet_list.append(newpacket + [checksum])
+        
+    return packet_list
 
 
 def tally_packets(packet_list, tally_by='cmd', **kwargs):
