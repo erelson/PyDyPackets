@@ -136,14 +136,16 @@ def translate_packet(byte_packet, includetime=itit):
         Packets include 0xff 0xff and checksum.  If a time stamp is present, the
         first entry in the list is a float.
     includetime : boolean
-        If true, packet time stamps will be converted to a string as well.  If
-        false, the packet time stamps are ignored.
+        If true, packet time stamp (if one exists) will be converted to a string
+        as well.  If false, the packet time stamps are ignored.
     
     Returns
     ----------
     retlist : list of strings
-        If using a simple packet structure, generally of the form:
+        If using a simple packet structure, generally of the form::
+        
             [strID, strInst, strCmd1, strVal1, strCmd2, strVal2, ...]
+            
         Else if using sync-write packets, a list for each servo, and each list
         starts with a newline and tab::
         
