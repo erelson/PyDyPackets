@@ -65,7 +65,23 @@ def show_cmd(myid=None):
                     dictCmd[key][0], key, dictCmd[key][1])
     
     return
-       
+
+def is_bad_packet(byte_packet):
+    """Return true if a packet is invalid
+    
+    TODO: Determine more conditionals/defintions of bad packets.
+    
+    Parameters
+    -----------
+    byte_packet : list of integers
+        List of bytes in a packet, including FF FF.
+        
+    Returns
+    -------
+    boolean
+    """
+    return len(byte_packet) < _cmd
+    
 
 def sum_vals(byte_packet):
     """Sum value bytes by shifting the higher bytes as needed
@@ -171,7 +187,7 @@ def translate_packet(byte_packet, includetime=itit):
         if includetime: timestamp = ["Timestamp: {0:8}".format(byte_packet[0])]
         byte_packet = byte_packet[1:]
     
-    if len(byte_packet) < _cmd: 
+    if is_bad_packet(byte_packet): 
         return ("bad packet; too short. expected: {0}; received: {1}".format( \
                 _cmd, len(byte_packet)),)
     

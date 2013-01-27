@@ -9,7 +9,7 @@ from PyDyConfig import include_timestamp_in_translate as itit
 from optparse import OptionParser
 
 from PyDyPackets import _id, _cmd, _instr, _len, _synclen, _syncval, \
-                        translate_packet
+                        translate_packet, is_bad_packet
 
 
 def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
@@ -41,6 +41,9 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
     f_instr = _is_list(f_instr)
     f_cmd = _is_list(f_cmd)
     
+    if sync_split and len(f_instr) and 0x83 not in f_instr:
+        f_instr.append(0x83)
+    
     filtered = list()
     for line in stream:
         packet = line.split()
@@ -53,12 +56,16 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
             
         packet = [int(x) for x in packet]
         
+        if is_bad_packet(packet):
+            continue
+        
         # check packet contents against the filters
         if (f_id == None or packet[_id] in f_id or sync_split) and \
                 (f_cmd == None or packet[_cmd] in f_cmd) and \
                 (f_instr == None or packet[_instr] in f_instr):
             # split up sync-write packets
-            if sync_split and packet[_instr] == 0x83:
+            if sync_split and packet[_instr] == 0x83 and \
+                    (f_instr == None or 0x03 in f_instr):
                 for subpacket in make_packets_from_sync_write_packet(packet):
                     if (f_id == None or subpacket[_id] in f_id):
                         filtered.append(time + subpacket)

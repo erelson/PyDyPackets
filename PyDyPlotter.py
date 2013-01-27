@@ -46,7 +46,8 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
     """
     
     # get list of packets, each packet is a list of integers
-    packets = PyDyParser.filtering_method(fr, f_id=id, f_instr=instr, f_cmd=cmd)
+    packets = PyDyParser.filtering_method(fr, f_id=id, f_instr=instr, \
+            f_cmd=cmd, sync_split=True)
     
     plotting_dict = {}
     for packet in packets:
