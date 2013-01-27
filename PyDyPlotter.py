@@ -110,9 +110,6 @@ def main():
             dest="my_f_cmd",default="30",help="A single integer " \
             "or set of comma separated integers for commands to keep " \
             "when filtering; e.g. '-c 1,2,3'. Default: %default")
-    parser.add_option('-o','--output',action="store", \
-            dest="output",default="filtered_out.txt",help="Specify output " \
-            "file for filtered list of packets. Default: %default")
     #
     
     (options, args) = parser.parse_args()
