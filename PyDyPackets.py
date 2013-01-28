@@ -9,8 +9,8 @@ from optparse import OptionParser
 # Global indices for getting bytes from packets;
 # I'm doing this so I can easily toss the FF FF leading bytes if desired...
 _id = 2
-_len = 3     # note length is N + 2 where N is # of parameters
-_instr = 4   #  and N includes the Cmd value as well as the actual value bytes
+_len = 3     # note length is N + 3 where N is # of parameter bytes
+_instr = 4
 _cmd = 5     # address to start writing or reading data at
 _val = 6
 _synclen = 6 # where the length of subpackets is specified for sync-write
@@ -81,30 +81,58 @@ def is_bad_packet(byte_packet):
     boolean
     """
     return len(byte_packet) < _cmd
-    
 
-def sum_vals(byte_packet):
+    
+def sum_single_cmd_val(byte_packet, cmd):
     """Sum value bytes by shifting the higher bytes as needed
     
     Parameters
     -----------
     byte_packet : list of integers
         List of bytes in a packet, including FF FF.
+    cmd : integer
+        Desired command address to take data value from
         
     Returns
     -------
     val : integer
         Sum of low and high bytes,
     """
-    val = 0
-    for i in xrange(byte_packet[_len] - 3):
-        val += byte_packet[_val+i]<<(8*i)
+    # Skip any timestamp passed
+    if byte_packet[0] != 255:
+        byte_packet = byte_packet[1:]
         
+    dictCmd = device_dict[id_dict[byte_packet[_id]]]
+    
+    # Find offset and number of bytes to pass to sum_vals_2
+    # Offset is limited by # of val bytes in packet, 
+    #  and # of value bytes for cmd
+    offset = 0
+    while ( cmd > offset + byte_packet[_cmd] ) \
+            and ( offset < byte_packet[_len] - 3 ):
+        offset += 1
+    # The number of bytes is limited by either the cmd, or the packet length
+    val_length = dictCmd[cmd][1]
+    if val_length + offset > (byte_packet[_len] - 3):
+        val_length = (byte_packet[_len] - 3) - offset
+        
+    val = sum_vals_2(byte_packet[offset+_val:offset+_val+val_length])
+    
     return val
     
     
 def sum_vals_2(bytes):
     """Sum value bytes by shifting the higher bytes as needed
+    
+    Parameters
+    -----------
+    bytes : list of integers
+        List of value bytes (not a complete packet)
+        
+    Returns
+    -------
+    val : integer
+        Sum of low and high bytes,
     """
     val = 0
     for i in xrange(len(bytes)):
@@ -144,7 +172,7 @@ def vals_split_and_translate(vals, mycmd, myid=None):
             # handles single or pairs of value bytes (i.e. low + high bytes)
             else:
                 cmdList += [dictCmd[mycmd+cnt][0], "Val:{0:8}".format( \
-                           sum_vals_2(vals[cnt:cnt+dictCmd[mycmd+cnt][1]])) ]
+                        sum_vals_2(vals[cnt:cnt+dictCmd[mycmd+cnt][1]])) ]
                 cnt += dictCmd[mycmd+cnt][1]
     except KeyError:
         print "Bad packet?:", vals

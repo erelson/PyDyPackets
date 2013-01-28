@@ -8,13 +8,16 @@ import matplotlib.pyplot as plt
 from optparse import OptionParser
 
 import PyDyParser
-from PyDyPackets import _id, _cmd, _instr, _len, _val, sum_vals
+from PyDyPackets import _id, _cmd, _instr, _len, _val, sum_single_cmd_val
 
 from PyDyConfig import dict_subplot
 
 def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
                     make_plot=True):
     """A file stream of packets is filtered and plotted
+    
+    The packet stream is stored as a dictionary of lists, with each list
+    corresponding to a servo ID.
     
     Parameters
     ----------
@@ -25,8 +28,8 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
         ID #s to keep
     instr : list/tuple of integers
         instruction values to keep
-    cmd : list/tuple of integers
-        command values to keep
+    cmd : integer
+        command value to keep
     subplot_dict : dictionary
         A custom dictionary with keys starting from 0.  Each key
         corresponds with a subplot specification.  Typically, these defines 
@@ -51,10 +54,18 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
     
     plotting_dict = {}
     for packet in packets:
-        if packet[_id] in plotting_dict.keys():
-            plotting_dict[packet[_id]].append(sum_vals(packet))
+        if packet[0] != "255":
+            xval = [float(packet[0])]
+            packet = packet[1:]
+        else: xval = []
+            
+        # packet_id = str(packet[_id])
+        packet_id = packet[_id]
+        
+        if packet_id in plotting_dict.keys():
+            plotting_dict[packet_id].append(sum_single_cmd_val(packet, cmd))
         else:
-            plotting_dict[packet[_id]] = [ sum_vals(packet) ]
+            plotting_dict[packet_id] = [ sum_single_cmd_val(packet, cmd) ]
     
     # plotkeys is the list (and order) of plots to make
     if id is None:
@@ -122,7 +133,7 @@ def main():
     
     with open(args[0], 'r') as fr:
         plot_trends(fr, id=options.my_f_id, \
-                instr=options.my_f_instr, cmd=options.my_f_cmd)
+                instr=options.my_f_instr, cmd=int(options.my_f_cmd))
 
 if __name__ == '__main__':
     main()
