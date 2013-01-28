@@ -104,7 +104,7 @@ def sum_single_cmd_val(byte_packet, cmd):
         
     dictCmd = device_dict[id_dict[byte_packet[_id]]]
     
-    # Find offset and number of bytes to pass to sum_vals_2
+    # Find offset and number of bytes to pass to sum_vals
     # Offset is limited by # of val bytes in packet, 
     #  and # of value bytes for cmd
     offset = 0
@@ -116,12 +116,12 @@ def sum_single_cmd_val(byte_packet, cmd):
     if val_length + offset > (byte_packet[_len] - 3):
         val_length = (byte_packet[_len] - 3) - offset
         
-    val = sum_vals_2(byte_packet[offset+_val:offset+_val+val_length])
+    val = sum_vals(byte_packet[offset+_val:offset+_val+val_length])
     
     return val
     
     
-def sum_vals_2(bytes):
+def sum_vals(bytes):
     """Sum value bytes by shifting the higher bytes as needed
     
     Parameters
@@ -167,12 +167,12 @@ def vals_split_and_translate(vals, mycmd, myid=None):
             # handle last byte in vals
             if cnt + 1 == len(vals):
                 cmdList += [dictCmd[mycmd+cnt][0], "Val:{0:8}".format( \
-                        sum_vals_2(vals[cnt:cnt+1]) ) ]
+                        sum_vals(vals[cnt:cnt+1]) ) ]
                 cnt += 1
             # handles single or pairs of value bytes (i.e. low + high bytes)
             else:
                 cmdList += [dictCmd[mycmd+cnt][0], "Val:{0:8}".format( \
-                        sum_vals_2(vals[cnt:cnt+dictCmd[mycmd+cnt][1]])) ]
+                        sum_vals(vals[cnt:cnt+dictCmd[mycmd+cnt][1]])) ]
                 cnt += dictCmd[mycmd+cnt][1]
     except KeyError:
         print "Bad packet?:", vals
