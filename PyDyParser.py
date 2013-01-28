@@ -105,7 +105,7 @@ def make_packets_from_sync_write_packet(packet):
     # Sync packet format:
     # FF FF FE length 83 cmd sublength ID1 vals[1,sublen] ID2 vals ... checksum
     subpackets = [ packet[x:x + sublength + 1] \
-            for x in range(_syncval, packet[_len], sublength + 1) ]
+            for x in range(_syncval, packet[_len] + 4 - 1, sublength + 1) ]
                 
     # Build new packets
     for subpacket in subpackets:
