@@ -8,6 +8,7 @@ from optparse import OptionParser
 
 # Global indices for getting bytes from packets;
 # I'm doing this so I can easily toss the FF FF leading bytes if desired...
+# 0 and 1 are the leading 0xFF bytes
 _id = 2
 _len = 3     # note length is N + 3 where N is # of parameter bytes
 _instr = 4
@@ -18,14 +19,14 @@ _syncval = 7 # where the first subpacket begins for sync-writes
 _readcmd = 5 # address to start reading data at 
 _readlen = 6 # number of registers read-data packet is requesting
 
-#           #instr  # name        #???
+#           #instr #name          #num param bytes plus a cmd byte
 dictInstr = {0x00: ["status OK;", "0 "],
              0x01: ["ping      ", "0 "],
             #0x01 is also input voltage error
              0x02: ["read data ", "2 "],
             #0x02 is also angle limit error
-             0x03: ["write data", "2~"],
-             0x04: ["reg write ", "2~"],
+             0x03: ["write data", "2+"],
+             0x04: ["reg write ", "2+"],
             #0x04 is also overheating error
              0x05: ["action    ", "0 "],
              0x06: ["reset     ", "0 "],
@@ -34,7 +35,7 @@ dictInstr = {0x00: ["status OK;", "0 "],
             #0x20 is overload error bit
             #0x40 is instruction error bit
             #0x80 is an unused error bit
-             0x83: ["sync write", "4~"]
+             0x83: ["sync write", "4+"]
             }
 
             
