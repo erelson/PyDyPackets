@@ -11,18 +11,19 @@ import time
 from optparse import OptionParser
 
 
+translate = False  #
+saveall = False  # Controls whether malformed packets are saved
+
 ######################################
 # Serial port settings are managed in your 'Config/pydypackets.cfg' file.
 
-def logger_method(translate=False, saveall=False, outputfile="logging_output.txt"):
+def logger_method(outputfile="logging_output.txt"):
     """Method opens serial port and stores received byte packets.
     
     Parameters
     ----------
-    saveall : boolean
-        Controls whether malformed packets are saved
-    translate : boolean
-        If true, packets are displayed in human readable form
+    outputfile : string
+        Filename to output log to
     """
     
     logging.basicConfig(level=logging.DEBUG,
@@ -42,7 +43,7 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
             self.timestamp = 0.0
                 
     
-    def COMThread(byte_packet, saveall=False, translate=False):
+    def COMThread(byte_packet):
         """Method monitors serial port and sends packets to output
         
         Method is intended to be run in a threading.thread.
@@ -52,10 +53,6 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
         byte_packet : BytePacket object
             A BytePacket object allowing external thread access to the current 
             packet
-        saveall : boolean
-            Controls whether malformed packets are saved
-        translate : boolean
-            If true, packets are displayed in human readable form
         """
         
         byte_list = list()
@@ -80,33 +77,11 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
                     # Identify and vet packets; 
                     # We use FF FF to identify *end* of packet.
                     if byte_list[-2:] == [0xff,0xff]:
-                        
-                        checksumOK = byte_list[-3] == \
-                                255 - (sum(byte_list[:-3]) % 256)
-                        
-                        # Save packet
-                        # Note: saved packets have FF FF prepended to them
-                        if saveall:
-                            byte_packet.word = [0xff,0xff] + byte_list[:-2]
-                        elif checksumOK:
-                            byte_packet.word = [0xff,0xff] + byte_list[:-2]
-                        else:
-                            continue
-                        
-                        if translate:
-                            # logging.debug("\t".join(translate_packet(byte_packet.word)))
-                            print "\t".join(translate_packet(byte_packet.word))
-                        else:
-                            logging.debug(("packet: " + \
-                                    " ".join(["{0:<3}".format(x) \
-                                    for x in byte_packet.word]) + \
-                                    "  packet ok?: " + str(checksumOK )))
-                                    
-                        # Get packet time
-                        if timing:
-                            byte_packet.timestamp = time.time() - startTime
-                        
-                        byte_list = list()
+                        try:
+                            byte_list = _handle_packet(byte_packet, byte_list, \
+                                    startTime)
+                        except IndexError:
+                            byte_list = list()
                         
                     # Threshold to keep byte_list at a reasonable size.
                     # 108 chosen as 4 + 4 + 20 * 5, e.g. sending speed/position
@@ -133,10 +108,9 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
     mybyte_packet = BytePacket()
     
     # Create serial port monitoring thread
-    thread = threading.Thread(target=COMThread, args=(mybyte_packet,), \
-            kwargs={'translate': translate, 'saveall': saveall})
-    # thread = threading.Thread(target=COMThread, args=(mybyte_packet,))
-    # thread = threading.Thread(target=COMThread, kwargs={'byte_packet': mybyte_packet})
+    thread = threading.Thread(target=COMThread, args=(mybyte_packet,))
+    # thread = threading.Thread(target=COMThread, args=(mybyte_packet,), \
+            # kwargs={'translate': translate, 'saveall': saveall})
     thread.daemon = True # Thread is killed when main thread ends.
     thread.start()
     
@@ -148,10 +122,8 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
                     if mybyte_packet.timestamp != myoldtimestamp:
                         myoldtimestamp = mybyte_packet.timestamp
                         
-                        # Record packet timestamp
-                        if timing:
-                            fw.write("{0:.3f} ".format(mybyte_packet.timestamp) + " ")
-                        
+                        # Record packet timestamp and packet contents
+                        fw.write("{0:.3f} ".format(mybyte_packet.timestamp) + " ")
                         fw.write(" ".join([str(x) for x in mybyte_packet.word]) + "\n")
                     
             else: # packets are differentiated by their contents
@@ -167,6 +139,50 @@ def logger_method(translate=False, saveall=False, outputfile="logging_output.txt
     
     return
     
+
+def _handle_packet(byte_packet, byte_list, startTime):
+    """Method handles completed packets
+
+    Parameters
+    ----------
+    byte_packet : BytePacket object
+        A BytePacket object allowing external thread access to the current 
+        packet
+    byte_list : list of integers
+        New byte packet to be stored in byte_packet if valid
+    startTime : float
+        Result of initial time.time() call
+    """
+    checksumOK = byte_list[-3] == \
+            255 - (sum(byte_list[:-3]) % 256)
+    
+    # Save packet
+    # Note: saved packets have FF FF prepended to them
+    if saveall:
+        byte_packet.word = [0xff,0xff] + byte_list[:-2]
+    elif checksumOK:
+        byte_packet.word = [0xff,0xff] + byte_list[:-2]
+    else:
+        # continue
+        return list()
+    
+    if translate:
+        # logging.debug("\t".join(translate_packet(byte_packet.word)))
+        print "\t".join(translate_packet(byte_packet.word))
+    else:
+        logging.debug(("packet: " + \
+                " ".join(["{0:<3}".format(x) \
+                for x in byte_packet.word]) + \
+                "  packet ok?: " + str(checksumOK )))
+                
+    # Get packet time
+    if timing:
+        byte_packet.timestamp = time.time() - startTime
+    
+    # byte_list = list()
+                      
+    return list()
+
     
 def main():
     """Parse command line options
@@ -190,8 +206,19 @@ def main():
     
     (options, args) = parser.parse_args()
     
-    logger_method(translate=options.translate, saveall=options.saveall, \
-            outputfile=options.output)
+    global saveall
+    global translate
+    
+    saveall = options.saveall
+    translate = options.translate
+    
+    if saveall:
+        print "All packets (including bad packets) will be saved in " \
+                "{0}".format(options.output)
+    if translate:
+        print "Packets will be translated for listing in this window."
+    
+    logger_method(outputfile=options.output)
     
     return
 
