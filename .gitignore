@@ -23,7 +23,7 @@ bin/
 tmp/
 *.tmp
 *.bak
-*.swp
+*.sw?
 *~.nib
 local.properties
 .classpath
