@@ -4,30 +4,26 @@ from PyDyConfig import port, baud, timing
 from PyDyPackets import translate_packet
 
 import threading
-# import time
 import logging  # prevents different threads' output from mixing
 import serial
 import time
 import sys
 from optparse import OptionParser
-from collections import defaultdict
 
 
 translate = False  #
 saveall = False  # Controls whether malformed packets are saved
 
-# Create a defaultdict from a regular dict; Dict assigns correct time function
-# based on the OS being used.
-baseDict = { 'darwin' : None,
-                       'win32' : time.clock,
-                       'win64' : time.clock,
-                       'linux2' : time.time
-                     }
-platformTimingDict = defaultdict(None)
-for key in baseDict:
-    platformTimingDict[key] = baseDict[key]
 
-gettime = platformTimingDict[sys.platform]
+# Dict assigns correct gettime function based on the OS being used.
+platformTimingDict = {
+             'win32' : time.clock,
+             #'win64' : time.clock, #64-bit python on 64-bit Win -> win32
+             'linux2' : time.time
+           }
+           
+gettime = platformTimingDict.get(sys.platform, time.time)
+
 
 ######################################
 # Serial port settings are managed in your 'Config/pydypackets.cfg' file.
