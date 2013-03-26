@@ -8,11 +8,26 @@ import threading
 import logging  # prevents different threads' output from mixing
 import serial
 import time
+import sys
 from optparse import OptionParser
+from collections import defaultdict
 
 
 translate = False  #
 saveall = False  # Controls whether malformed packets are saved
+
+# Create a defaultdict from a regular dict; Dict assigns correct time function
+# based on the OS being used.
+baseDict = { 'darwin' : None,
+                       'win32' : time.clock,
+                       'win64' : time.clock,
+                       'linux2' : time.time
+                     }
+platformTimingDict = defaultdict(None)
+for key in baseDict:
+    platformTimingDict[key] = baseDict[key]
+
+gettime = platformTimingDict[sys.platform]
 
 ######################################
 # Serial port settings are managed in your 'Config/pydypackets.cfg' file.
@@ -28,9 +43,9 @@ def logger_method(outputfile="logging_output.txt"):
     
     logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',)
-                    
-    if timing: startTime = time.time()
-                        
+
+    if timing: startTime = gettime()
+        
     class BytePacket(object):
         """Class for passing byte packet between threads
         
@@ -177,7 +192,7 @@ def _handle_packet(byte_packet, byte_list, startTime):
                 
     # Get packet time
     if timing:
-        byte_packet.timestamp = time.time() - startTime
+        byte_packet.timestamp = gettime() - startTime
     
     # byte_list = list()
                       
