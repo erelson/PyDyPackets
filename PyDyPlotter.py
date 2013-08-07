@@ -81,7 +81,8 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
     plt.figure(1)
     cnt = 0;
     for key in plotkeys:
-        # If reached the limit of plots/window
+        # If reached the limit of 'plots per window,' then next plots
+        # are in a new window.
         if cnt == len(subplot_dict.keys()):
             fignum += 1
             plt.figure(fignum)
