@@ -263,7 +263,7 @@ def main():
             dest="translate",default=False,help="Write filtered packets in " \
             "human-readable form. Default: %default")
     parser.add_option('--time',action="store_true", \
-            dest="timestamp",default=itit,help="Appends timestamps to end of " \
+            dest="timestamp",default=False,help="Appends timestamps to end of " \
             "each translated packet (if timestamps exist). Default: %default")
     parser.add_option('-T','--Tally',action="store", \
             dest="my_tally_by",default=None,help="Tally filtered packets by " \
