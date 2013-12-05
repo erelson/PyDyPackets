@@ -143,7 +143,7 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
                           'len'   : _len
                           }
     
-    if tally_by not in dict_tally_by.keys():
+    if tally_by not in dict_tally_by:
         return 0
     
     # read file into packet_list if 'file' kwarg was given
