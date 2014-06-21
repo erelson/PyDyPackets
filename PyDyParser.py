@@ -49,12 +49,13 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
         packet = line.split()
         if packet == []: continue
         
-        if packet[0] != "255":
+        # Look for integer and or hex ("\xFF") strings instead of a timestamp
+        if packet[0] != "255" and packet[0][-2:].lower() != "ff":
             time = [float(packet[0])]
             packet = packet[1:]
         else: time = []
             
-        packet = [int(x) for x in packet]
+        packet = [int(x, 0) for x in packet]
         
         if is_bad_packet(packet):
             continue
@@ -151,7 +152,7 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
         packet_list = list()
         with open(kwargs['file'], 'r') as fr:
             for line in fr:
-                packet_list.append( [int(x) for x  in line.split()] )
+                packet_list.append( [int(x, 0) for x  in line.split()] )
     # else if packet_list is already a list of packets...
     elif packet_list != None: 
         pass

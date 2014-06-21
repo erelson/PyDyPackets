@@ -152,7 +152,8 @@ def vals_split_and_translate(vals, mycmd, myid=None):
     mycmd : integer 
         Register at which to start reading bytes
     myid : integer, optional
-        ID of servo for values being translated.
+        ID of servo for values being translated. Filters packets to only
+        those for this ID.
     
     Returns
     ----------
@@ -189,11 +190,11 @@ def translate_packet(byte_packet, includetime=itit):
     Parameters
     ----------
     byte_packet : a list of integers
-        Packets include 0xff 0xff and checksum.  If a time stamp is present, the
+        Packets include 0xff 0xff and checksum. If a time stamp is present, the
         first entry in the list is a float.
     includetime : boolean
         If true, packet time stamp (if one exists) will be converted to a string
-        as well.  If false, the packet time stamps are ignored.
+        as well. If false, the packet time stamps are ignored.
     
     Returns
     ----------
@@ -292,7 +293,7 @@ def main():
         return
         
     print "PyDyPackets.py is a utility script, meant to be called by the " \
-            "user.  See 'Readme.rst' for a usage guide."
+            "user. See 'Readme.rst' for a usage guide."
     return
 
     
