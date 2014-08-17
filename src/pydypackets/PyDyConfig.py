@@ -1,21 +1,35 @@
 #
 
 import ConfigParser
-from sys import exit
+
+
+class PyDyConfigException(Exception):
+    pass
 
 
 config = ConfigParser.ConfigParser()
 
 #######################################
+# Look for a config file.
 # Either pydypackets.cfg or pydypackets.txt are valid config files.
-status = config.read("Config/pydypackets.cfg")
+configfilenames = [
+        "pydypackets.cfg",
+        "pydypackets.txt",
+        "Config/pydypackets.cfg",
+        "Config/pydypackets.txt",
+        ]
+for filename in configfilenames:
+    status = config.read("Config/pydypackets.cfg")
+    if status != []:
+        break
+
 if status == []:
-    status = config.read("Config/pydypackets.txt")
-if status == []:
-    print "\nERROR: no config file exists. Create a pydypackets.cfg file in " \
-            "the Config/ folder. See Config/config_example.cfg for more info."
-    print "\nFor PyDyPackets usage guide, and more info, see 'Readme.rst'."
-    exit()
+    #print "\nERROR: no config file exists. Create a pydypackets.cfg file in " \
+    #        "the Config/ folder. See Config/config_example.cfg for more info."
+    #print "\nFor PyDyPackets usage guide, and more info, see 'Readme.rst'."
+    msg = "ERROR: no config file exists. Create a pydypackets.cfg file in " \
+            "the Config/ folder. See Config/config_example.cfg for more info." \
+    raise PyDyConfigException, msg
     
 
 #######################################
@@ -28,7 +42,7 @@ if config.has_section("bots"):
 #######################################
 # Grab single value parameters
 
-# This list stores 
+# The param_guide list stores
 #  (1) section containing parameter in pydypackets.cfg
 #  (2) parameter names as listed in pydypackets.cfg
 #  (3) their defaults
@@ -46,8 +60,8 @@ param_list = list()
 
 for param in param_guide:
     try:
-        if config.has_section(param[0]):
         # Try to read from pydypackets.cfg
+        if config.has_section(param[0]):
             # Note that param[3] is a function
             param_list.append( param[3](param[0], param[1]) )
     except ConfigParser.NoOptionError:
