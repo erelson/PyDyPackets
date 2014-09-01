@@ -1,6 +1,6 @@
 #
 
-import ConfigParser
+from ConfigParser import ConfigParser
 
 
 class PyDyConfigException(Exception):
@@ -10,7 +10,8 @@ class PyDyConfigException(Exception):
 class PyDyConfigParser(ConfigParser):
 
     def __init__(self):
-        self.super.__init__()
+        ConfigParser.__init__(self)
+        #super(ConfigParser, self).__init__()
         #self.config = ConfigParser.ConfigParser()
 
 
@@ -43,11 +44,11 @@ class PyDyConfigParser(ConfigParser):
                     "Config/pydypackets.txt",
                     ]
             for filename in configfilenames:
-                status = ConfigParser.read(filename)#"Config/pydypackets.cfg")
+                status = ConfigParser.read(self, filename)#"Config/pydypackets.cfg")
                 if status != []:
                     break
         else:
-            status = ConfigParser.read(myfile)#"Config/pydypackets.cfg")
+            status = ConfigParser.read(self, myfile)#"Config/pydypackets.cfg")
 
         if status == []:
             #print "\nERROR: no config file exists. Create a pydypackets.cfg file in " \
@@ -64,7 +65,7 @@ class PyDyConfigParser(ConfigParser):
         #  files define)
         if self.has_section("bots"):
             for profile in self.items("bots"):
-                ConfigParser.read(profile[1]) # UNTESTED
+                ConfigParser.read(self, profile[1]) # UNTESTED
     
     def get_params(self):
         """
@@ -136,6 +137,8 @@ class PyDyConfigParser(ConfigParser):
             if i not in id_dict.keys():
                 id_dict[i] = self.default_device_type
 
+        return id_dict
+
     def get_limits(self):
         """Not implemented"""
         # Create device ID to device type dictionary
@@ -146,6 +149,7 @@ class PyDyConfigParser(ConfigParser):
         else:
             pass
             #id_dict = dict([ ("default_device_type", "AX-12") ])
+        #return
 
     def get_plot_config(self):
         """

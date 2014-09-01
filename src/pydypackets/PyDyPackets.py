@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 
-from PyDyConfig import id_dict, default_device_type
-from PyDyConfig import include_timestamp_in_translate as itit
-from PyDyDevices import device_dict
-
 from optparse import OptionParser
+
+from pydypackets.PyDyConfig import PyDyConfigParser
+from pydypackets.PyDyDevices import device_dict
+
 
 # Global indices for getting bytes from packets;
 # I'm doing this so I can easily toss the FF FF leading bytes if desired...
@@ -16,7 +16,7 @@ _cmd = 5     # address to start writing or reading data at
 _val = 6
 _synclen = 6 # where the length of subpackets is specified for sync-write
 _syncval = 7 # where the first subpacket begins for sync-writes
-_readcmd = 5 # address to start reading data at 
+_readcmd = 5 # address to start reading data at
 _readlen = 6 # number of registers read-data packet is requesting
 
 #           #instr #name          #num param bytes plus a cmd byte
@@ -53,11 +53,16 @@ def show_instr():
     
 def show_cmd(myid=None):
     """ """
+    # Get values from PyDyConfigParser:
+    cfg = PyDyConfigParser()
+    cfg.read()
+    __, __, default_device_type, __, __ = cfg.get_params()
+    
     dictCmd = device_dict[default_device_type]
     print "\nPrinting the command set for default device ({0}):".format( \
             default_device_type)
     
-    print ""
+    print ''
     print "In command line arguments (-c), enter the number value in column 2"
     print "\nCommand:                  Value:        valid range"
     for key in dictCmd:
@@ -84,7 +89,7 @@ def is_bad_packet(byte_packet):
     return len(byte_packet) < _cmd
 
     
-def sum_single_cmd_val(byte_packet, cmd):
+def sum_single_cmd_val(byte_packet, cmd, id_dict):
     """Sum value bytes by shifting the higher bytes as needed
     
     Parameters
@@ -106,7 +111,7 @@ def sum_single_cmd_val(byte_packet, cmd):
     dictCmd = device_dict[id_dict[byte_packet[_id]]]
     
     # Find offset and number of bytes to pass to sum_vals
-    # Offset is limited by # of val bytes in packet, 
+    # Offset is limited by # of val bytes in packet,
     #  and # of value bytes for cmd
     offset = 0
     while ( cmd > offset + byte_packet[_cmd] ) \
@@ -142,14 +147,14 @@ def sum_vals(bytes):
     return val
     
     
-def vals_split_and_translate(vals, mycmd, myid=None):
+def vals_split_and_translate(vals, mycmd, id_dict, myid=None):
     """Return translated list of single or multiple commands
     
     Parameters
     ----------
     vals : list of integers
         List of value bytes in the packet
-    mycmd : integer 
+    mycmd : integer
         Register at which to start reading bytes
     myid : integer, optional
         ID of servo for values being translated. Filters packets to only
@@ -178,12 +183,12 @@ def vals_split_and_translate(vals, mycmd, myid=None):
                 cnt += dictCmd[mycmd+cnt][1]
     except KeyError:
         print "Bad packet?:", vals
-        raise KeyError
+        raise
 
     return cmdList
     
     
-def translate_packet(byte_packet, includetime=itit):
+def translate_packet(byte_packet, id_dict, includetime=None):
     """Method returns structured human readable translation of bytes in a packet
     The goal of this method is not well quantified yet...
     
@@ -192,7 +197,7 @@ def translate_packet(byte_packet, includetime=itit):
     byte_packet : a list of integers
         Packets include 0xff 0xff and checksum. If a time stamp is present, the
         first entry in the list is a float.
-    includetime : boolean
+    includetime : boolean, optional
         If true, packet time stamp (if one exists) will be converted to a string
         as well. If false, the packet time stamps are ignored.
     
@@ -201,14 +206,16 @@ def translate_packet(byte_packet, includetime=itit):
     retlist : list of strings
         If using a simple packet structure, generally of the form::
         
-            [strID, strInst, strCmd1, strVal1, strCmd2, strVal2, ...]
+            [strID, strInst, strCmd1, strVal1, strCmd2, strVal2, [err], ...]
+
+        Where an error string is included if checksum is invalid.
             
         Else if using sync-write packets, a list for each servo, and each list
         starts with a newline and tab::
         
             ['Sync-write',
-            ['\n\t'+strID1, strCmd1, strVal1, strCmd2, strVal2, ...],
-            ['\n\t'+strID2, strCmd1, strVal1, strCmd2, strVal2, ...],
+            ['\n\t'+strID1, strCmd1, strVal1, strCmd2, strVal2, [err], ...],
+            ['\n\t'+strID2, strCmd1, strVal1, strCmd2, strVal2, [err], ...],
             ....]
     """
     
@@ -217,22 +224,28 @@ def translate_packet(byte_packet, includetime=itit):
         if includetime: timestamp = ["Timestamp: {0:8}".format(byte_packet[0])]
         byte_packet = byte_packet[1:]
     
-    if is_bad_packet(byte_packet): 
+    if is_bad_packet(byte_packet):
         return ("bad packet; too short. expected: {0}; received: {1}".format( \
                 _cmd, len(byte_packet)),)
     
     try:
         strInst = dictInstr[ byte_packet[_instr] ][0]
     except KeyError:
-        # print "packet with bad instruction byte"
         return ("packet with bad instruction byte",)
         
     # Use information on lengths of commands to discern multiple
     #  commands, with commands potentially having varying numbers of value bytes
     #  e.g. setting goal position & moving speed, each with 2 value bytes
     mycmd = byte_packet[_cmd]
-    
-    if byte_packet[_instr] == 0x83: # sync-write packet
+
+    checksum = 255 - (sum(byte_packet[2:-2]) % 256)
+    if checksum == byte_packet[-1]:
+        errstring = ''
+    else:
+        errstring = "invalid checksum {0:x} (actual {1:x})".format( \
+                byte_packet[-1], checksum)
+    # sync-write packet
+    if byte_packet[_instr] == 0x83:
         retlist = ["Sync-write", ] + timestamp
         # iterate from first value byte, to byte before last byte (checksum),
         #  and iterate by length+1 bytes (ID + values) at a time
@@ -246,23 +259,23 @@ def translate_packet(byte_packet, includetime=itit):
             retlist.append( "\n\tID:{0:3}".format(subpacket[0]) )
             retlist += subpacketTranslated
             
-        return retlist
-        
-    elif byte_packet[_instr] == 0x02: # read-data packet
+        return retlist + errstring
+    # read-data packet
+    elif byte_packet[_instr] == 0x02:
         strID = "ID:{0:3}".format(byte_packet[_id])
         retlist = [strID, strInst]
-        for cmd in xrange(byte_packet[_readcmd], 
+        for cmd in xrange(byte_packet[_readcmd],
                 byte_packet[_readcmd] + byte_packet[_readlen]):
             retlist.append( \
                     device_dict[id_dict[byte_packet[_id]]][cmd][0].strip() )
-        return retlist + timestamp
-        
-    else: # write-data or reg-write packet
+        return retlist + timestamp + errstring
+    # write-data or reg-write packet
+    else:
         strID = "ID:{0:3}".format(byte_packet[_id])
         strCmdsVals = vals_split_and_translate(byte_packet[_val:-1], mycmd, \
                     byte_packet[_id])
         
-        return [strID, strInst] + strCmdsVals + timestamp
+        return [strID, strInst] + strCmdsVals + timestamp + errstring
     
     
 def main():
