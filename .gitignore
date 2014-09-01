@@ -8,7 +8,6 @@ docs/_build
 logging_output.txt
 filtered_out.txt
 junk.py
-Test.py
 *.*~
 
 

@@ -221,7 +221,8 @@ def translate_packet(byte_packet, id_dict, includetime=None):
     
     timestamp = []
     if byte_packet[0] != 255:
-        if includetime: timestamp = ["Timestamp: {0:8}".format(byte_packet[0])]
+        if includetime:
+            timestamp = ["Timestamp: {0:8}".format(byte_packet[0])]
         byte_packet = byte_packet[1:]
     
     if is_bad_packet(byte_packet):
@@ -240,22 +241,22 @@ def translate_packet(byte_packet, id_dict, includetime=None):
 
     checksum = 255 - (sum(byte_packet[2:-2]) % 256)
     if checksum == byte_packet[-1]:
-        errstring = ''
+        errstring = []#''
     else:
-        errstring = "invalid checksum {0:x} (actual {1:x})".format( \
-                byte_packet[-1], checksum)
+        errstring = ["invalid checksum {0:x} (actual {1:x})".format(
+                byte_packet[-1], checksum)]
     # sync-write packet
     if byte_packet[_instr] == 0x83:
         retlist = ["Sync-write", ] + timestamp
         # iterate from first value byte, to byte before last byte (checksum),
         #  and iterate by length+1 bytes (ID + values) at a time
-        subpackets = [ byte_packet[x:x+1+byte_packet[_synclen]] for x in \
+        subpackets = [ byte_packet[x:x+1+byte_packet[_synclen]] for x in
                 range(_syncval, len(byte_packet)-1, 1+byte_packet[_synclen]) ]
                 
         for subpacket in subpackets:
             # subpacketTranslated = vals_split_and_translate(subpacket,mycmd)
-            subpacketTranslated = vals_split_and_translate(subpacket[1:], \
-                    mycmd, subpacket[0])
+            subpacketTranslated = vals_split_and_translate(subpacket[1:],
+                    mycmd, id_dict, subpacket[0])
             retlist.append( "\n\tID:{0:3}".format(subpacket[0]) )
             retlist += subpacketTranslated
             
@@ -272,8 +273,8 @@ def translate_packet(byte_packet, id_dict, includetime=None):
     # write-data or reg-write packet
     else:
         strID = "ID:{0:3}".format(byte_packet[_id])
-        strCmdsVals = vals_split_and_translate(byte_packet[_val:-1], mycmd, \
-                    byte_packet[_id])
+        strCmdsVals = vals_split_and_translate(byte_packet[_val:-1], mycmd,
+                    id_dict, byte_packet[_id])
         
         return [strID, strInst] + strCmdsVals + timestamp + errstring
     
