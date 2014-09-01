@@ -70,10 +70,10 @@ dictRX28Cmd = dictAXCmd.copy()
 dictRX64Cmd = dictAXCmd.copy()
 
 dictMX12WCmd = dictAXCmd.copy()
-dictMX28Cmd[20] = ["MULTI_TURN_OFFSET_L   ",2], # Read-only/not used?
-dictMX28Cmd[21] = ["MULTI_TURN_OFFSET_H   ",1], # Read-only/not used?
-dictMX28Cmd[22] = ["RESOLUTION_DIVIDER_L  ",2], # Read-only/not used?
-dictMX28Cmd[22] = ["RESOLUTION_DIVIDER_H  ",1], # Read-only/not used?
+dictMX12WCmd[20] = ["MULTI_TURN_OFFSET_L   ",2], # Read-only/not used?
+dictMX12WCmd[21] = ["MULTI_TURN_OFFSET_H   ",1], # Read-only/not used?
+dictMX12WCmd[22] = ["RESOLUTION_DIVIDER_L  ",2], # Read-only/not used?
+dictMX12WCmd[22] = ["RESOLUTION_DIVIDER_H  ",1], # Read-only/not used?
 dictMX12WCmd[26] = ["D_GAIN                ",1],
 dictMX12WCmd[27] = ["I_GAIN                ",1],
 dictMX12WCmd[28] = ["P_GAIN                ",1],
