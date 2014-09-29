@@ -1,19 +1,16 @@
 #! /usr/bin/env python
 
-from PyDyConfig import id_dict
-from PyDyDevices import device_dict
+from optparse import OptionParser
 
 import matplotlib.pyplot as plt
 
-from optparse import OptionParser
+import pydypackets.PyDyParser as PyDyParser
+from pydypackets.PyDyConfig import PyDyConfigParser
+from pydypackets.PyDyDevices import device_dict
+from pydypackets.PyDyPackets import _id, _cmd, _instr, _len, _val, sum_single_cmd_val
 
-import PyDyParser
-from PyDyPackets import _id, _cmd, _instr, _len, _val, sum_single_cmd_val
 
-from PyDyConfig import dict_subplot
-
-def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
-                    make_plot=True):
+def plot_trends(fr, id=None, instr=3, cmd=30, make_plot=True):
     """A file stream of packets is filtered and plotted
     
     The packet stream is stored as a dictionary of lists, with each list
@@ -30,15 +27,6 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
         instruction values to keep
     cmd : integer
         command value to keep
-    subplot_dict : dictionary
-        A custom dictionary with keys starting from 0.  Each key
-        corresponds with a subplot specification.  Typically, these defines 
-        a 3-digit subplot value, where digits are (1) # columns; (2) # rows;
-        (3) plotnum. Plotnum goes row by row, filling columns of each row.
-        You can specify this dictionary when calling plot_trends, or just 
-        modify dict_subplot in PyDyPlotter.py.
-        See also:
-        http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplot
     make_plot : boolean
         If False, plotting is skipped.
     
@@ -47,6 +35,11 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
     plotting_dict : dictionary
         the dictionary storing the lists that would be plotted
     """
+    # Get values from PyDyConfigParser:
+    cfg = PyDyConfigParser()
+    cfg.read()
+    subplot_dict = cfg.get_plot_config()
+    id_dict = cfg.get_id_to_device_dict()
     
     # get list of packets, each packet is a list of integers
     packets = PyDyParser.filtering_method(fr, f_id=id, f_instr=instr, \
@@ -57,15 +50,16 @@ def plot_trends(fr, id=None, instr=3, cmd=30, subplot_dict=dict_subplot, \
         if packet[0] != "255":
             xval = [float(packet[0])]
             packet = packet[1:]
-        else: xval = []
-            
+        else:
+            xval = []
+        
         # packet_id = str(packet[_id])
         packet_id = packet[_id]
         
         if packet_id in plotting_dict.keys():
-            plotting_dict[packet_id].append(sum_single_cmd_val(packet, cmd))
+            plotting_dict[packet_id].append(sum_single_cmd_val(packet, cmd, id_dict))
         else:
-            plotting_dict[packet_id] = [ sum_single_cmd_val(packet, cmd) ]
+            plotting_dict[packet_id] = [ sum_single_cmd_val(packet, cmd, id_dict) ]
     
     # plotkeys is the list (and order) of plots to make
     if id is None:
@@ -107,7 +101,13 @@ def main():
     
     """
     
-    usage = "usage: %prog [raw-input-file [options] ]"
+    usage = "usage: %prog [raw-input-file [options] ]\n\n" \
+            "This utility creates plots from a PyDyPackets log file. " \
+            "Flags are available to filter log files, e.g. to plot only " \
+            "specific servos or instructions." \
+            "\n\nFiltering includes the ability to automatically split " \
+            "sync-write packets into their per-servo commands."
+
     parser = OptionParser(usage)
     
     #
@@ -132,6 +132,7 @@ def main():
         print "Use the -h option for more help."
         return
     
+    print args[0]
     with open(args[0], 'r') as fr:
         plot_trends(fr, id=options.my_f_id, \
                 instr=options.my_f_instr, cmd=int(options.my_f_cmd))

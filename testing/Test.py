@@ -16,7 +16,7 @@ print '\t'.join(PDP.translate_packet([ \
         0XFF,0XFF,0XFE,0X18,0X83,0X1E,0X04,0X00,0X10,0X00,0X50,
         0X01,0X01,0X20,0X02,0X60,0X03,0X02,0X30,0X00,0X70,0X01,
         0X03,0X20,0X02,0X80,0X03,0X12], z) )
-print "non-sync-write tests:"
+print "\nnon-sync-write tests:"
 print '\t'.join(PDP.translate_packet([0xff,0xff,0x00,0x02,0x00,0xfd], z))
 
 print '\t'.join(PDP.translate_packet([255,255,52,5,3,8,255,3,185], z)) #write
@@ -30,6 +30,7 @@ print '\t'.join(PDP.translate_packet([0xff,0xff,0x01,0x02,0x05,0xf7], z)) #actio
 print '\t'.join(PDP.translate_packet([0xff,0xff,0x00,0x07,0x03,0x1e,0x00,0x02,0x00,0x02,0xd3], z)) #example 18
 
 print "\nWith timestamps..."
+print "\t".join(PDP.translate_packet([123.445,0xff,0xff,0x00,0x04,0x03,0x04,0x01,0xf3], z)) # write
 print "\t".join(PDP.translate_packet([123.445,0xff,0xff,0x00,0x04,0x03,0x04,0x01,0xf3], z, True)) # write
 print '\t'.join(PDP.translate_packet([123.445, \
         0XFF,0XFF,0XFE,0X18,0X83,0X1E,0X04,

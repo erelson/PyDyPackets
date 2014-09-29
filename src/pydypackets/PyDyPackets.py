@@ -131,7 +131,7 @@ def sum_vals(bytes):
     """Sum value bytes by shifting the higher bytes as needed
     
     Parameters
-    -----------
+    ----------
     bytes : list of integers
         List of value bytes (not a complete packet)
         
@@ -161,7 +161,7 @@ def vals_split_and_translate(vals, mycmd, id_dict, myid=None):
         those for this ID.
     
     Returns
-    ----------
+    -------
     cmdList : list of strings
         List of commands and values
     """
@@ -202,7 +202,7 @@ def translate_packet(byte_packet, id_dict, includetime=None):
         as well. If false, the packet time stamps are ignored.
     
     Returns
-    ----------
+    -------
     retlist : list of strings
         If using a simple packet structure, generally of the form::
         

@@ -9,7 +9,10 @@ from pydypackets.PyDyPackets import _id, _cmd, _instr, _len, _synclen, _syncval,
 def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
             sync_split=False):
     """Returns a filtered list of byte packets from a file stream
-    
+
+    Filtering includes the ability to automatically split
+    sync-write packets into their per-servo commands.
+
     Parameters
     ----------
     stream : a file stream, e.g. via open('file', 'r')
@@ -24,9 +27,9 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
         If true, convert sync-write packets into artificial individual packets.
         Packet time-stamp of the sync-write packet is applied to each
         sub-packet.
-    
+
     Returns
-    ----------
+    -------
     filtered : list of lists of integers
         A list of filtered packets; each packet is a list of integers
     """
@@ -35,7 +38,8 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
     f_instr = _is_list(f_instr)
     f_cmd = _is_list(f_cmd)
     
-    if sync_split and len(f_instr) and 0x83 not in f_instr:
+    # split up sync packets if enabled, and not filtering for sync packets
+    if sync_split and (len(f_instr) and 0x83 not in f_instr):
         f_instr.append(0x83)
     
     filtered = list()
@@ -44,12 +48,26 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
         if packet == []: continue
         
         # Look for integer and or hex ("\xFF") strings instead of a timestamp
-        if packet[0] != "255" and packet[0][-2:].lower() != "ff":
-            time = [float(packet[0])]
+        if packet[0] != "255" and packet[0].decode('string-escape') != "\xff" \
+                and packet[0].lower() != "0xff":
+            try:
+                time = [float(packet[0])]
+            except ValueError:
+                print "Possibly helpful debug info:"
+                print "repr(packet[0]):", repr(packet[0])
+                print "len(packet[0]):", len(packet[0])
+                print "packet[0].decode('string-escape'):", \
+                        packet[0].decode('string-escape')
+                print "len(packet[0].decode('string-escape')):", \
+                        len(packet[0].decode('string-escape'))
+                raise
             packet = packet[1:]
         else: time = []
-            
-        packet = [int(x, 0) for x in packet]
+
+        if packet[0].decode('string-escape') == '\xff': # Note: \xff is a single byte: len('\xff')==1
+            packet = [ord(_.decode('string-escape')) for _ in  packet]
+        else: # handle 255 or 0xFF styles
+            packet = [int(_, 0) for _ in packet]
         
         if is_bad_packet(packet):
             continue
@@ -174,16 +192,18 @@ def tally_packets(packet_list, tally_by='cmd', **kwargs):
     
     
 def _is_list(f_thing):
-    """Try various ways to assure that we have a list.
+    """Try various ways to assure that we have a filter list.
     This is just for the heck of it... excessive flexibility...
     
     Parameters
-    ---------
+    ----------
     f_thing : string or list
+        Represents list of numeric filters (e.g. servo ID, instruction byte)
     
     Returns
-    ----------
+    -------
     f_thing : list
+        Returns list unless invalid input, in which case None is returned.
     """
     
     if f_thing == None:
@@ -219,7 +239,7 @@ def tally(list):
     list : list of anything
     
     Returns
-    ----------
+    -------
     tally list : list of tuples
         Each tuple is of the form (item, # occurences of item)
     """

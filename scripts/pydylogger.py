@@ -1,8 +1,5 @@
 #! /usr/bin/env python
 
-from PyDyConfig import port, baud, timing
-from PyDyPackets import translate_packet
-
 import threading
 import logging  # prevents different threads' output from mixing
 import serial
@@ -10,9 +7,17 @@ import time
 import sys
 from optparse import OptionParser
 
+from pydypackets.PyDyConfig import PyDyConfigParser
+from pydypackets.PyDyPackets import translate_packet
 
-translate = False  #
-saveall = False  # Controls whether malformed packets are saved
+
+translate = False #
+saveall = False # Controls whether malformed packets are saved
+
+port = None
+baud = None
+timing = None
+id_dict = None
 
 
 # Dict assigns correct gettime function based on the OS being used.
@@ -33,15 +38,16 @@ def logger_method(outputfile="logging_output.txt"):
     
     Parameters
     ----------
-    outputfile : string
+    outputfile : str
         Filename to output log to
+
     """
     
     logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',)
 
     if timing: startTime = gettime()
-        
+
     class BytePacket(object):
         """Class for passing byte packet between threads
         
@@ -52,20 +58,20 @@ def logger_method(outputfile="logging_output.txt"):
             self.lock = threading.Lock()
             self.word = []
             self.timestamp = 0.0
-                
-    
+
+
     def COMThread(byte_packet):
         """Method monitors serial port and sends packets to output
         
-        Method is intended to be run in a threading.thread.
+        Method is intended to be run by a `threading.thread` instance.
         
         Parameters
         ----------
-        byte_packet : BytePacket object
-            A BytePacket object allowing external thread access to the current 
+        byte_packet : `BytePacket` instance
+            A `BytePacket` object allowing external thread access to the current
             packet
+
         """
-        
         byte_list = list()
         byte_packet.word = list()
         
@@ -78,14 +84,14 @@ def logger_method(outputfile="logging_output.txt"):
                 while ser.inWaiting():
                     # Read bytes and add them to byte_list
                     byte = ser.read()
-                    if byte != None and byte !="": 
+                    if byte != None and byte != "":
                         try:
                             byte_list.append(int(byte.encode('hex'),16))
                             
                         except ValueError as e:
                             logging.debug(( 'error', byte, e,))
                     
-                    # Identify and vet packets; 
+                    # Identify and vet packets;
                     # We use FF FF to identify *end* of packet.
                     if byte_list[-2:] == [0xff,0xff]:
                         try:
@@ -97,7 +103,7 @@ def logger_method(outputfile="logging_output.txt"):
                     # Threshold to keep byte_list at a reasonable size.
                     # 108 chosen as 4 + 4 + 20 * 5, e.g. sending speed/position
                     #  to 20 servos...
-                    if len(byte_list) > 108: 
+                    if len(byte_list) > 108:
                         byte_list = list()
     
     
@@ -149,20 +155,21 @@ def logger_method(outputfile="logging_output.txt"):
             print "KeyboardInterrupt caught! Closing {0}...".format(outputfile)
     
     return
-    
+
 
 def _handle_packet(byte_packet, byte_list, startTime):
     """Method handles completed packets
 
     Parameters
     ----------
-    byte_packet : BytePacket object
-        A BytePacket object allowing external thread access to the current 
+    byte_packet : `BytePacket` instance
+        A BytePacket object allowing external thread access to the current
         packet
-    byte_list : list of integers
+    byte_list : list of ints
         New byte packet to be stored in byte_packet if valid
     startTime : float
         Result of initial time.time() call
+
     """
     checksumOK = byte_list[-3] == \
             255 - (sum(byte_list[:-3]) % 256)
@@ -179,7 +186,7 @@ def _handle_packet(byte_packet, byte_list, startTime):
     
     if translate:
         # logging.debug("\t".join(translate_packet(byte_packet.word)))
-        print "\t".join(translate_packet(byte_packet.word))
+        print "\t".join(translate_packet(byte_packet.word, id_dict))
     else:
         logging.debug(("packet: " + \
                 " ".join(["{0:<3}".format(x) \
@@ -189,12 +196,10 @@ def _handle_packet(byte_packet, byte_list, startTime):
     # Get packet time
     if timing:
         byte_packet.timestamp = gettime() - startTime
-    
-    # byte_list = list()
-                      
+
     return list()
 
-    
+
 def main():
     """Parse command line options
     
@@ -219,10 +224,18 @@ def main():
     
     global saveall
     global translate
-    
     saveall = options.saveall
     translate = options.translate
     
+    global port
+    global baud
+    global timing
+    global id_dict
+    cfg = PyDyConfigParser()
+    cfg.read()
+    port, baud, __, timing, __ = cfg.get_params()
+    id_dict = cfg.get_id_to_device_dict()
+
     if saveall:
         print "All packets (including bad packets) will be saved in " \
                 "{0}".format(options.output)
@@ -233,6 +246,6 @@ def main():
     
     return
 
-    
+
 if __name__ == '__main__':
     main()

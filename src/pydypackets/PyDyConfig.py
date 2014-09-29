@@ -117,6 +117,13 @@ class PyDyConfigParser(ConfigParser):
 
         
     def get_id_to_device_dict(self):
+        """
+        Note
+        ----
+        Before invoking this method, :func:`get_params` must have been invoked.
+        """
+        if not hasattr(self, "default_device_type"):
+            self.get_params()
         # Create device ID to device type dictionary
         if self.has_section("id_to_device_type"):
             try:
@@ -156,11 +163,13 @@ class PyDyConfigParser(ConfigParser):
 
         Returns
         -------
-        dict_subplot : dict
-            Dictionary with integer keys mapped to subplot indices of the
-            form "abc" where a is horizontal divisions, b is vertical divisions,
-            and c is the position in the subplot grid, iterating over a
-            the fastest.
+        subplot_dict : dictionary
+            A custom dictionary with keys starting from 0.  Each key
+            corresponds with a subplot specification.  Typically, these defines
+            a 3-digit subplot value, where digits are (1) # columns; (2) # rows;
+            (3) plotnum. Plotnum goes row by row, filling columns of each row.
+            You can specify this dictionary when calling plot_trends, or just
+            modify dict_subplot in PyDyPlotter.py.
             See also:
             http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.subplot
 
