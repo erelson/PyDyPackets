@@ -9,54 +9,54 @@ from pydypackets.PyDyPackets import translate_packet
 from pydypackets.PyDyConfig import PyDyConfigParser
 
     
-def do_filtering(args, id_dict):
+def do_filtering(options, args, id_dict):
     """
 
     Parameters
     ----------
-    args : ArgumentParser.args
-        Contains arguments from commandline input
-    options : ArgumentParser.options
+    options : ArgumentParser.parse_args() output
         Contains options from commandline input
+    args : list of raw strings
+        Contains arguments from commandline input
     id_dict : dictionary
 
     """
     # Parse input and do filtering.
     # myfiltered is a list of packets; each pack is a list of integers.
-    if args.quick:
-        quickstream = StringIO(' '.join(args.arglist[0:]))
-        myfiltered = filtering_method(quickstream, f_id=args.my_f_id, \
-                f_instr=args.my_f_instr, f_cmd=args.my_f_cmd, \
-                sync_split=args.sync_split)
+    if options.quick:
+        quickstream = StringIO(' '.join(args[0:]))
+        myfiltered = filtering_method(quickstream, f_id=options.my_f_id, \
+                f_instr=options.my_f_instr, f_cmd=options.my_f_cmd, \
+                sync_split=options.sync_split)
     else:
         with open(args[0], 'r') as fr:
-            myfiltered = filtering_method(fr, f_id=args.my_f_id, \
-                    f_instr=args.my_f_instr, f_cmd=args.my_f_cmd, \
-                    sync_split=args.sync_split)
+            myfiltered = filtering_method(fr, f_id=options.my_f_id, \
+                    f_instr=options.my_f_instr, f_cmd=options.my_f_cmd, \
+                    sync_split=options.sync_split)
     
     # Optionally write filtered results to a new file
-    if args.output != '':
-        if args.quick:
-            print translate_packet(myfiltered[0], id_dict, includetime=args.timestamp)
+    if options.output != '':
+        if options.quick:
+            print translate_packet(myfiltered[0], id_dict, includetime=options.timestamp)
         elif len(myfiltered):
-            with open(args.output, 'w') as fw:
+            with open(options.output, 'w') as fw:
                 # either translated output
-                if args.translate:
+                if options.translate:
                     for packet in myfiltered:
                         packet = translate_packet(packet, id_dict, \
-                                includetime=args.timestamp)
+                                includetime=options.timestamp)
                         fw.write("\t".join(packet) + "\n")
                 # or raw integer output; float timestamp included if exists
                 else:
                     for packet in myfiltered:
                         fw.write(" ".join([str(x) for x in packet]) + "\n")
-            print "Filtered results written to {0}\n".format(args.output)
+            print "Filtered results written to {0}\n".format(options.output)
         else:
             print "No packets satisfied the filters specified."
     
     # Optionally tally packets and report
-    if args.my_tally_by != None:
-        tally_packets(myfiltered, tally_by=args.my_tally_by)
+    if options.my_tally_by != None:
+        tally_packets(myfiltered, tally_by=options.my_tally_by)
     
     return
 
@@ -73,7 +73,6 @@ def main():
     tw = TextWrapper()
     mywrap = lambda x: "\n".join(tw.wrap(x))
     tw.width = 80 - 25
-    #tw.subsequent_indent = 2 * ' '
     quicktext = "\n".join(["\n".join(tw.wrap(_)) for _ in (
             "Arg(s) will be concatenated and treated as "
             "a single packet and then parsed. Input should be "
@@ -125,9 +124,10 @@ def main():
             "Default: %(default)s"))
     #
     
-    args = parser.parse_args()
+    options = parser.parse_args()
+    args = options.arglist
     
-    if len(args.arglist) == 0:
+    if len(args) == 0:
         print "Command line use requires the name of a file with a packet " \
                 "log. (Or a string of bytes if using --quick option.)\n" \
                 "Use the -h option for more help."
@@ -138,10 +138,10 @@ def main():
     __, __, __, __, itit = cfg.get_params()
     id_dict = cfg.get_id_to_device_dict()
 
-    if args.timestamp is None:
-        args.timestamp = itit
+    if options.timestamp is None:
+        options.timestamp = itit
 
-    do_filtering(args, id_dict)
+    do_filtering(options, args, id_dict)
     return
     
 
