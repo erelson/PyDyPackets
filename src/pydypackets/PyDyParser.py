@@ -45,7 +45,13 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
     filtered = list()
     for line in stream:
         packet = line.split()
-        if packet == []: continue
+        if packet == []:
+            continue
+        # Check if string of escaped hex chars with no whitespace
+        elif len(packet) == 1:
+            packet = line.decode('string-escape')
+            if len(line) / 4 != len(packet):
+                continue
         
         # Look for integer and or hex ("\xFF") strings instead of a timestamp
         if packet[0] != "255" and packet[0].decode('string-escape') != "\xff" \
@@ -65,7 +71,10 @@ def filtering_method(stream, f_id=None, f_instr=None, f_cmd=None, \
         else: time = []
 
         if packet[0].decode('string-escape') == '\xff': # Note: \xff is a single byte: len('\xff')==1
-            packet = [ord(_.decode('string-escape')) for _ in  packet]
+            if len(packet[0]) > 1:
+                packet = [ord(_.decode('string-escape')) for _ in  packet]
+            else:
+                packet = [ord(_.decode('string-escape')) for _ in  packet]
         else: # handle 255 or 0xFF styles
             packet = [int(_, 0) for _ in packet]
         

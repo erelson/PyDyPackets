@@ -75,13 +75,15 @@ def main():
     tw.width = 80 - 25
     quicktext = "\n".join(["\n".join(tw.wrap(_)) for _ in (
             "Arg(s) will be concatenated and treated as "
-            "a single packet and then parsed. Input should be "
-            "space-delimited bytes. \\xff, 255, and 0xff are all supported. "
-            "If using the latter, wrape the sequence of bytes in quotes "
+            "a single packet and then parsed. Input should be space-delimited "
+            "bytes. 0xff, 255, and \\xff styles are all supported. "
+            "If using the latter, space delimiting is option, but you must "
+            "wrap the sequence of bytes in quotes "
             "(or escape the backslashes).\n\n"
             "Example usage:"
             "\n$ pydyparser -q 255 255 12 7 3 30 0 2 0 2 195"
             "\n$ pydyparser -q 0xFF 0xFF 0x0C 0x07 0x03 0x1E 0x00 0x02 0x00 0x02 0xC3"
+            "\n$ pydyparser -q \"\\xFF\\xFF\\x0C\\x07\\x03\\x1E\\x00\\x02\\x00\\x02\\xC3\""
             "\n$ pydyparser -q \"\\xFF \\xFF \\x0C \\x07 \\x03 \\x1E \\x00 \\x02 \\x00 \\x02 \\xC3\""
             "\n\nThese all produce output:\n"
             " ['ID: 12', 'write data', 'GOAL_POSITION_L       ', 'Val:     512', "
