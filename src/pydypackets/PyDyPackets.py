@@ -239,7 +239,7 @@ def translate_packet(byte_packet, id_dict, includetime=None):
     #  e.g. setting goal position & moving speed, each with 2 value bytes
     mycmd = byte_packet[_cmd]
 
-    checksum = 255 - (sum(byte_packet[2:-2]) % 256)
+    checksum = 255 - (sum(byte_packet[2:-1]) % 256)
     if checksum == byte_packet[-1]:
         errstring = []#''
     else:
