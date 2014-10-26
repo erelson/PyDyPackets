@@ -5,7 +5,8 @@ import logging  # prevents different threads' output from mixing
 import serial
 import time
 import sys
-from optparse import OptionParser
+from argparse import ArgumentParser
+from textwrap import TextWrapper
 
 from pydypackets.PyDyConfig import PyDyConfigParser
 from pydypackets.PyDyPackets import translate_packet
@@ -205,23 +206,31 @@ def main():
     
     """
     
-    usage = "usage: %prog [options]"
-    parser = OptionParser(usage)
+    usage = "usage: %(prog)s [options]"
+    parser = ArgumentParser(prog='pydylogger', usage=usage,
+                            formatter_class=RawTextHelpFormatter)
+    
+    tw = TextWrapper()
+    mywrap = lambda x: "\n".join(tw.wrap(x))
+    tw.width = 80 - 25
     
     #
-    parser.add_option('-t','--translate',action="store_true", \
+    parser.add_argument('arglist', nargs='*', default=list())
+    parser.add_argument('-t','--translate',action="store_true", \
             dest="translate",default=False,help="Print human readable " \
-            "packets. Default: %default")
-    parser.add_option('-a','--all',action="store_true", \
+            "packets. Default: %(default)s")
+    parser.add_argument('-a','--all',action="store_true", \
             dest="saveall",default=False,help="Optionally save all bytes/" \
-            "packets, including malformed packets. Default: %default")
-    parser.add_option('-o','--output',action="store", \
+            "packets, including malformed packets. Default: %(default)s")
+    parser.add_argument('-o','--output',action="store", \
             dest="output",default="logging_output.txt",help="Specify output " \
-            "file for log of packets. Default: %default")
+            "file for log of packets. Default: %(default)s")
     #
     
-    (options, args) = parser.parse_args()
+    options = parser.parse_args()
+    args = options.arglist
     
+    # TODO get rid of these globals...
     global saveall
     global translate
     saveall = options.saveall

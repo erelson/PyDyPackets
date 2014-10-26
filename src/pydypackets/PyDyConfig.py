@@ -26,8 +26,9 @@ class PyDyConfigParser(ConfigParser):
         """
         self.get_config_file(myfile)
 
+
     def get_config_file(self, myfile=None):
-        """
+        """Looks for configfile in current directory or in folder Config/.
 
         Parameters
         ----------
@@ -55,20 +56,21 @@ class PyDyConfigParser(ConfigParser):
             #        "the Config/ folder. See Config/config_example.cfg for more info."
             #print "\nFor PyDyPackets usage guide, and more info, see 'Readme.rst'."
             msg = "ERROR: no config file exists. Create a pydypackets.cfg file in " \
-                    "the Config/ folder. See Config/config_example.cfg for more info."
+                    "this folder by running `pydysetup`."
             raise PyDyConfigException(msg)
-    
-
 
         #######################################
         # Read in other bot profile(s) (overwrites any configs that both
         #  files define)
+        # TODO: UNTESTED
         if self.has_section("bots"):
             for profile in self.items("bots"):
-                ConfigParser.read(self, profile[1]) # UNTESTED
+                ConfigParser.read(self, profile[1])
     
+
     def get_params(self):
-        """
+        """Gets parameters in several sections of config file and returns their
+        values as a list.
 
         Returns
         -------
@@ -117,7 +119,13 @@ class PyDyConfigParser(ConfigParser):
 
         
     def get_id_to_device_dict(self):
-        """
+        """Retrieves mapping of servo IDs to servo types.
+
+        Returns
+        -------
+        id_dict : dictionary
+            Mapping of servo ID #s (int) to servo types.
+
         Note
         ----
         Before invoking this method, :func:`get_params` must have been invoked.
@@ -146,6 +154,7 @@ class PyDyConfigParser(ConfigParser):
 
         return id_dict
 
+
     def get_limits(self):
         """Not implemented"""
         # Create device ID to device type dictionary
@@ -158,8 +167,9 @@ class PyDyConfigParser(ConfigParser):
             #id_dict = dict([ ("default_device_type", "AX-12") ])
         #return
 
+
     def get_plot_config(self):
-        """
+        """A gets the matplotlib plot layout options from config file.
 
         Returns
         -------

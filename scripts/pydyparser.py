@@ -69,7 +69,7 @@ def main():
             "Program will filter and/or translate supplied raw packets.\n"
     parser = ArgumentParser(prog='pydyparser', usage=usage,
                             formatter_class=RawTextHelpFormatter)
-    
+
     tw = TextWrapper()
     mywrap = lambda x: "\n".join(tw.wrap(x))
     tw.width = 80 - 25
@@ -88,6 +88,7 @@ def main():
             "\n\nThese all produce output:\n"
             " ['ID: 12', 'write data', 'GOAL_POSITION_L       ', 'Val:     512', "
             "'GOAL_SPEED_L', 'Val:     512', 'invalid checksum c3 (actual c9)']").splitlines()])
+
     #
     parser.add_argument('arglist', nargs='*', default=list())
     parser.add_argument('-q','--quick',action="store_true", dest="quick",
