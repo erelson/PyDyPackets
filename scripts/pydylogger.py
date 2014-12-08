@@ -132,7 +132,7 @@ def logger_method(outputfile="logging_output.txt"):
     thread.daemon = True # Thread is killed when main thread ends.
     thread.start()
     
-    with open(outputfile,'w') as fw:
+    with open(outputfile, 'w') as fw:
         try:
             if timing: # use timing to differentiate new packets
                 myoldtimestamp = 0.0
@@ -208,22 +208,22 @@ def main():
     
     usage = "usage: %(prog)s [options]"
     parser = ArgumentParser(prog='pydylogger', usage=usage,
-                            formatter_class=RawTextHelpFormatter)
+                            )#formatter_class=RawTextHelpFormatter)
     
     tw = TextWrapper()
     mywrap = lambda x: "\n".join(tw.wrap(x))
     tw.width = 80 - 25
     
     #
-    parser.add_argument('arglist', nargs='*', default=list())
-    parser.add_argument('-t','--translate',action="store_true", \
-            dest="translate",default=False,help="Print human readable " \
+    parser.add_argument('arglist', nargs='*', default=list(), help='N/A')
+    parser.add_argument('-t', '--translate', action="store_true", \
+            dest="translate", default=False, help="Print human readable " \
             "packets. Default: %(default)s")
-    parser.add_argument('-a','--all',action="store_true", \
-            dest="saveall",default=False,help="Optionally save all bytes/" \
+    parser.add_argument('-a', '--all', action="store_true", \
+            dest="saveall", default=False, help="Optionally save all bytes/" \
             "packets, including malformed packets. Default: %(default)s")
-    parser.add_argument('-o','--output',action="store", \
-            dest="output",default="logging_output.txt",help="Specify output " \
+    parser.add_argument('-o', '--output', action="store", \
+            dest="output", default="logging_output.txt", help="Specify output " \
             "file for log of packets. Default: %(default)s")
     #
     

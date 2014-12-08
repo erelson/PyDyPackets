@@ -77,7 +77,7 @@ def main():
             "Arg(s) will be concatenated and treated as "
             "a single packet and then parsed. Input should be space-delimited "
             "bytes. 0xff, 255, and \\xff styles are all supported. "
-            "If using the latter, space delimiting is option, but you must "
+            "If using the latter, space delimiting is optional, but you must "
             "wrap the sequence of bytes in quotes "
             "(or escape the backslashes).\n\n"
             "Example usage:"
@@ -90,40 +90,43 @@ def main():
             "'GOAL_SPEED_L', 'Val:     512', 'invalid checksum c3 (actual c9)']").splitlines()])
 
     #
-    parser.add_argument('arglist', nargs='*', default=list())
-    parser.add_argument('-q','--quick',action="store_true", dest="quick",
+    parser.add_argument('arglist', nargs='*', default=list(),
+            help=mywrap("Path to a file to parse/translate, or list of bytes "
+            "to parse/translate if using -q flag."))
+    parser.add_argument('-q', '--quick', action="store_true", dest="quick",
             default=False, help=quicktext)
-    parser.add_argument('-s','--servos',action="store",
-            dest="my_f_id",default=None,
+    parser.add_argument('-s', '--servos', action="store",
+            dest="my_f_id", default=None,
             help=mywrap("A single integer "
             "or set of comma separated integers for servo IDs to keep "
             "when filtering; e.g. '-s 1,2,3'.\nDefault: %(default)s"))
-    parser.add_argument('-i','--instructions',action="store",
-            dest="my_f_instr",default=None,help=mywrap("A single integer "
+    parser.add_argument('-i', '--instructions', action="store",
+            dest="my_f_instr", default=None, help=mywrap("A single integer "
             "or set of comma separated integers for instructions to keep "
             "when filtering; e.g. '-i 1,2,3'.\nDefault: %(default)s"))
-    parser.add_argument('-c','--commands',action="store",
-            dest="my_f_cmd",default=None,help=mywrap("A single integer "
+    parser.add_argument('-c', '--commands', action="store",
+            dest="my_f_cmd", default=None, help=mywrap("A single integer "
             "or set of comma separated integers for commands to keep "
             "when filtering; e.g. '-c 1,2,3'.\nDefault: %(default)s"))
-    parser.add_argument('-o','--output',action="store",
-            dest="output",default="filtered_out.txt",help=mywrap("Specify output "
-            "file for filtered list of packets. (do `-o ''` to prevent output "
-            "creation.) Default: %(default)s"))
-    parser.add_argument('-t','--translate',action="store_true",
-            dest="translate",default=False,help=mywrap("Write filtered packets in "
-            "human-readable form.\nDefault: %(default)s"))
-    parser.add_argument('--time',action="store_true",
-            dest="timestamp",default=None,help=mywrap("Appends timestamps to end of "
-            "each translated packet (if timestamps exist). Default: %(default)s"))
-    parser.add_argument('-T','--Tally',action="store",
-            dest="my_tally_by",default=None,help=mywrap("Tally filtered packets by "
-            "command (cmd), instruction (instr) or servo ID (id).  E.g.: "
-            "'-T id'. Default: %(default)s"))
-    parser.add_argument('-S','--SyncWrite',action="store_true",
-            dest="sync_split",default=None,help=mywrap("Split up sync-write packets "
-            "when filtering to look for contents satisfying other criteria. "
-            "Can also be used just to create individual packets. "
+    parser.add_argument('-o', '--output', action="store",
+            dest="output", default="filtered_out.txt", help=mywrap("Specify "
+	    "output file for filtered list of packets. (do `-o ''` to prevent "
+	    "output creation.) Default: %(default)s"))
+    parser.add_argument('-t', '--translate', action="store_true",
+            dest="translate", default=False, help=mywrap("Write filtered "
+	    "packets in human-readable form.\nDefault: %(default)s"))
+    parser.add_argument('--time', action="store_true",
+            dest="timestamp", default=None, help=mywrap("Appends timestamps "
+	    "to end of each translated packet (if timestamps exist). "
+	    "Default: %(default)s"))
+    parser.add_argument('-T', '--Tally', action="store",
+            dest="my_tally_by", default=None, help=mywrap("Tally filtered "
+	    "packets by command (cmd), instruction (instr) or servo ID (id). "
+	    "E.g.: '-T id'. Default: %(default)s"))
+    parser.add_argument('-S', '--SyncWrite', action="store_true",
+            dest="sync_split", default=None, help=mywrap("Split up sync-write "
+	    "packets when filtering to look for contents satisfying other "
+	    "criteria. Can also be used just to create individual packets. "
             "Default: %(default)s"))
     #
     

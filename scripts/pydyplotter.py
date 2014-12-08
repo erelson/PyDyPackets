@@ -111,17 +111,18 @@ def main():
     parser = ArgumentParser(prog='pydyplotter', usage=usage)#, formatter_class=RawTextHelpFormatter)
 
     #
-    parser.add_argument('arglist', nargs='*', default=list())
-    parser.add_argument('-s','--servos',action="store", \
-            dest="my_f_id",default=None,help="A single integer " \
+    parser.add_argument('arglist', nargs='*', default=list(),
+            help="Path to a raw input list from pydylogger.")
+    parser.add_argument('-s', '--servos', action="store", \
+            dest="my_f_id", default=None, help="A single integer " \
             "or set of comma separated integers for servo IDs to keep " \
             "when filtering; e.g. '-s 1,2,3'. Default: %(default)s")
-    parser.add_argument('-i','--instructions',action="store", \
-            dest="my_f_instr",default="3",help="A single integer " \
+    parser.add_argument('-i', '--instructions', action="store", \
+            dest="my_f_instr", default="3", help="A single integer " \
             "or set of comma separated integers for instructions to keep " \
             "when filtering; e.g. '-i 1,2,3'. Default: %(default)s")
-    parser.add_argument('-c','--commands',action="store", \
-            dest="my_f_cmd",default="30",help="A single integer " \
+    parser.add_argument('-c', '--commands', action="store", \
+            dest="my_f_cmd", default="30", help="A single integer " \
             "or set of comma separated integers for commands to keep " \
             "when filtering; e.g. '-c 1,2,3'. Default: %(default)s")
     #
