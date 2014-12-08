@@ -19,7 +19,7 @@ User-friendly:
 :``pydyplotter``: Creating plots from packets; e.g. plots of each servo's position
 
 Each of these scripts can be called from the command line with various options.
-For more info, try ``ScriptName.py -h``
+For more info, try ``ScriptName -h``
 
 Usage
 -----
@@ -27,12 +27,17 @@ This software should be installed as a package for Python 2.7.
 To do this, download/clone the repository, and then run::
 
         python setup.py install
+        
+(If you are on Windows, make sure that ``C:\Python27\Scripts`` is in your PATH variable)
 
-The first thing that needs to be done is to create a config file.  To do this you can copy ``Config/config_example.cfg`` to ``Config/pydypackets.cfg``.  The latter is a required name.  An error is given if this file does not exist.
+The first thing that needs to be done is to create a config file. To do this
+invoke ``pydysetup``, which will create ``pydypackets.cfg`` in your current directory.
+The other scripts will raise an error if this file does not exist in the current directory
+or in a subfolder named ``Config``. (Having a global config file is on the TODO list.)
 
 Within the config file, various settings can be found. To start,
 set the serial/COM port being used for your setup. Note that the port
-specification is OS dependent.  Once you have a config file, you can run stuff!
+specification is OS dependent. Once you have a config file, you can run stuff!
 
 The steps for a couple of envisioned typical use cases are:
 
@@ -47,7 +52,11 @@ Or:
 
 Requirements
 ----------------
-Python (2.7) should be installed.  
+Python 2.7 should be installed. (3.x is not supported)
+
+You will need the following packages, installed e.g. via ``pip``:
+
+* ``pyserial``
 
 Plotting capabilities use MatPlotLib.
 
